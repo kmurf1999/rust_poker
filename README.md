@@ -2,6 +2,9 @@
 
 Fast range vs. range equity calculation for poker written in rust
 
+ - [Docs](https://docs.rs/rust_poker/0.1.0/rust_poker/)
+ - [Crates.io](https://crates.io/crates/rust_poker)
+
 ## Hand Evaluator
  - Evaluates hands with any number of cards from 0 to 7
  - Higher score is better
