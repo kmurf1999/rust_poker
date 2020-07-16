@@ -302,6 +302,54 @@ impl HandRange {
     }
 }
 
+
+/// Convert lowercase rank char to u8
+///
+/// # Example
+///
+/// ```
+/// use rust_poker::hand_range::char_to_rank;
+/// let rank = char_to_rank('a');
+/// ```
+pub fn char_to_rank(c: char) -> u8 {
+    let rank = match c {
+        'a' => 12,
+        'k' => 11,
+        'q' => 10,
+        'j' => 9,
+        't' => 8,
+        '9' => 7,
+        '8' => 6,
+        '7' => 5,
+        '6' => 4,
+        '5' => 3,
+        '4' => 2,
+        '3' => 1,
+        '2' => 0,
+        _ => u8::MAX
+    };
+    return rank;
+}
+
+/// Convert lowercase suit char to u8
+///
+/// # Example
+///
+/// ```
+/// use rust_poker::hand_range::char_to_suit;
+/// let rank = char_to_suit('s');
+/// ```
+pub fn char_to_suit(c: char) -> u8 {
+    let suit = match c {
+        's' => 0,
+        'h' => 1,
+        'd' => 2,
+        'c' => 3,
+        _ => u8::MAX
+    };
+    return suit;
+}
+
 /// Converts a string into a 64bit card mask
 ///
 /// # Arguments
@@ -333,37 +381,6 @@ pub fn get_card_mask(text: &str) -> u64 {
         cards |= 1u64 << card;
     }
     return cards;
-}
-
-fn char_to_rank(c: char) -> u8 {
-    let rank = match c {
-        'a' => 12,
-        'k' => 11,
-        'q' => 10,
-        'j' => 9,
-        't' => 8,
-        '9' => 7,
-        '8' => 6,
-        '7' => 5,
-        '6' => 4,
-        '5' => 3,
-        '4' => 2,
-        '3' => 1,
-        '2' => 0,
-        _ => u8::MAX
-    };
-    return rank;
-}
-
-fn char_to_suit(c: char) -> u8 {
-    let suit = match c {
-        's' => 0,
-        'h' => 1,
-        'd' => 2,
-        'c' => 3,
-        _ => u8::MAX
-    };
-    return suit;
 }
 
 #[cfg(test)]

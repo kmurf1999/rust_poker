@@ -1,5 +1,3 @@
-#![feature(test)]
-
 extern crate bytepack;
 
 mod hand;
