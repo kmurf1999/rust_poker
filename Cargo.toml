@@ -2,6 +2,8 @@
 name = "rust_poker"
 version = "0.1.0"
 authors = ["ruffers9 <kwmurph2@asu.edu>"]
+repository = "https://github.com/ruffers9/rust_poker"
+description = "Rust poker library"
 license-file = "LICENSE"
 edition = "2018"
 
