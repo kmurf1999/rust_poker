@@ -1,0 +1,17 @@
+[package]
+name = "rust_poker"
+version = "0.1.0"
+authors = ["ruffers9 <kwmurph2@asu.edu>"]
+edition = "2018"
+
+[workspace]
+members = [
+    "common",
+    "hand_evaluator",
+    "equity_calculator"
+    ]
+
+[dependencies]
+common = { path =  "./common" }
+hand_evaluator = { path = "./hand_evaluator" }
+equity_calculator = { path = "./equity_calculator" }
