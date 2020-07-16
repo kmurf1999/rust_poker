@@ -4,14 +4,18 @@ version = "0.1.0"
 authors = ["ruffers9 <kwmurph2@asu.edu>"]
 edition = "2018"
 
-[workspace]
-members = [
-    "common",
-    "hand_evaluator",
-    "equity_calculator"
-    ]
+[build-dependencies]
+bindgen = "0.53.1"
+
+# [workspace]
+# members = [
+#     "common",
+#     "hand_evaluator",
+#     "equity_calculator"
+#     ]
 
 [dependencies]
-common = { path =  "./common" }
-hand_evaluator = { path = "./hand_evaluator" }
-equity_calculator = { path = "./equity_calculator" }
+lazy_static = "1.4.0" # global static arrays
+bytepack = "0.4.1"
+rand = { version = "0.7", features = ["small_rng"] }
+crossbeam = "0.7.3"

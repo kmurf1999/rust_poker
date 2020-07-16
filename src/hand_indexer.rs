@@ -5,7 +5,7 @@
 
 use std::ptr;
 
-// test rust that we can share this between threads
+// tell rust that we can share this between threads
 unsafe impl Sync for hand_indexer_t {}
 unsafe impl Send for hand_indexer_t {}
 
@@ -15,9 +15,7 @@ include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 static TOTAL_CARDS: &'static [usize; 4] = &[2, 5, 6, 7];
 
 impl hand_indexer_t {
-    /**
-     * create a new hand_indexer struct
-     */
+    /// Creates a new hand_indexer_t object
     pub fn new() -> hand_indexer_t {
         hand_indexer_t {
             cards_per_round: [0; 8usize],

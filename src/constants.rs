@@ -1,4 +1,7 @@
+/// Number of cards in standard deck
 pub const CARD_COUNT: u8 = 52;
+/// Number of ranks in a sandard deck
+/// (2 -> A)
 pub const RANK_COUNT: u8 = 13;
 
 pub const RANKS: &'static [u64; 13] = &[

@@ -1,2 +1,5 @@
 /target
 offset_table.dat
+*.o
+*.a
+

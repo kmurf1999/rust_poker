@@ -10,21 +10,32 @@ use std::iter::FromIterator;
 
 use crate::constants::*;
 
-// a single hand (0->51, 0->51)
+/// A single player hand
 #[derive(Debug, Clone, Copy)]
-pub struct Combo(pub u8, pub u8);
+pub struct HoleCards(pub u8, pub u8);
 
+/// char to u8 rank table
 pub static RANKS: &'static [char; 13] = &[
     '2', '3', '4', '5', '6', '7', '8', '9',
     'T', 'J', 'Q', 'K', 'A'
 ];
 
+/// char to u8 suit table
 pub static SUITS: &'static [char; 4] = &[
     's', 'h', 'd', 'c'
 ];
 
 
-impl Combo {
+impl HoleCards {
+    /// Writes hole cards to string
+    /// 
+    /// # Example
+    /// ```
+    /// // prints '2s2h'
+    /// use rust_poker::hand_range::HoleCards;
+    /// let hand = HoleCards(0, 1);
+    /// println!("{}", hand.to_string());
+    /// ```
     pub fn to_string(&self) -> String {
         let chars: Vec<char> = vec![
             RANKS[usize::from(self.0 >> 2)],
@@ -36,8 +47,7 @@ impl Combo {
     }
 }
 
-// for sorting hands
-impl Ord for Combo {
+impl Ord for HoleCards {
     fn cmp(&self, other: &Self) -> Ordering {
         if (self.0 >> 2) != (other.0 >> 2) {
             // compare first ranks
@@ -56,16 +66,13 @@ impl Ord for Combo {
     }
 }
 
-impl PartialOrd for Combo {
+impl PartialOrd for HoleCards {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-/**
- * compares if two hands are the same
- */
-impl PartialEq for Combo {
+impl PartialEq for HoleCards {
     fn eq(&self, other: &Self) -> bool {
         let h1: u16 = (u16::from(self.0) << 8) | u16::from(self.1);
         let h2: u16 = (u16::from(other.0) << 8) | u16::from(other.1);
@@ -73,21 +80,18 @@ impl PartialEq for Combo {
     }
 }
 
-impl Eq for Combo {}
+impl Eq for HoleCards {}
 
-// a range of hands
+/// A range of private player hands for texas holdem
 #[derive(Debug, Clone)]
 pub struct HandRange {
-    pub hands: Vec<Combo>,
+    /// A vector of possible hole card combinations
+    pub hands: Vec<HoleCards>,
     char_vec:  Vec<char>
 }
 
 impl HandRange {
-    // PUBLIC
-    /**
-     * default constructor
-     * creates an empty range
-     */
+    /// Creates an empty range of hands
     fn new() -> Self {
         HandRange {
             hands: Vec::new(),
@@ -95,13 +99,34 @@ impl HandRange {
         }
     }
 
+    /// Create a vector of Handrange from a vector of strings
+    ///
+    /// # Arguments
+    ///
+    /// * `arr` - A vector of equilab-like range strings
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use rust_poker::hand_range::HandRange;
+    /// let ranges = HandRange::from_str_arr(["22+", "AKs"].to_vec());
+    /// ```
     pub fn from_str_arr(arr: Vec<&str>) -> Vec<Self> {
         return arr.iter().map(|x| HandRange::from_str(x)).collect();
     }
 
-    /**
-     * Create card range from range string
-     */
+    /// Create a Handrange from a string
+    ///
+    /// # Arguments
+    ///
+    /// * `text` - A equilab-like range string
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use rust_poker::hand_range::HandRange;
+    /// let range = HandRange::from_str("JJ+");
+    /// ```
     pub fn from_str(text: &str) -> Self {
         let mut range: HandRange = HandRange::new();
 
@@ -118,7 +143,6 @@ impl HandRange {
         return range;
     }
 
-    // PRIVATE
     fn parse_hand(&mut self, i: &mut usize) -> bool {
 
         let backtrack = *i;
@@ -205,13 +229,13 @@ impl HandRange {
         }
         // error: if same two cards
         if c1 == c2 { return; }
-        let h: Combo;
+        let h: HoleCards;
         // card >> 2 rips the suit bits off, so we can compare rank
         // card & 3, only views the last 2 bits so we can compare suit
         if c1 >> 2 < c2 >> 2 || (c1 >> 2 == c2 >> 2 && (c1 & 3) < (c2 & 3)) {
-            h = Combo(c2, c1);
+            h = HoleCards(c2, c1);
         } else {
-            h = Combo(c1, c2);
+            h = HoleCards(c1, c2);
         }
         self.hands.push(h);
     }
@@ -278,10 +302,18 @@ impl HandRange {
     }
 }
 
-/**
- * return 64 bit card mask from string
- * @param text, example: ah2s
- */
+/// Converts a string into a 64bit card mask
+///
+/// # Arguments
+///
+/// * `text` - A card string
+///
+/// # Example
+///
+/// ```
+/// use rust_poker::hand_range::get_card_mask;
+/// let card_mask = get_card_mask("As2hQd");
+/// ```
 pub fn get_card_mask(text: &str) -> u64 {
     let char_vec: Vec<char> = text.to_lowercase().chars().collect();
     let mut cards: u64 = 0;
@@ -303,10 +335,6 @@ pub fn get_card_mask(text: &str) -> u64 {
     return cards;
 }
 
-
-/**
- * convert 2-a to int 0..12
- */
 fn char_to_rank(c: char) -> u8 {
     let rank = match c {
         'a' => 12,
@@ -327,11 +355,6 @@ fn char_to_rank(c: char) -> u8 {
     return rank;
 }
 
-/**
- * convert s, h, c, d to int 0..3
- * spades -> 0, hearts -> 1,
- * clubs -> 2, diamonds -> 3
- */
 fn char_to_suit(c: char) -> u8 {
     let suit = match c {
         's' => 0,

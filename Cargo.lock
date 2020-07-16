@@ -132,13 +132,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "common"
-version = "0.1.0"
-dependencies = [
- "bindgen",
-]
-
-[[package]]
 name = "crossbeam"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -224,16 +217,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "equity_calculator"
-version = "0.1.0"
-dependencies = [
- "common",
- "crossbeam",
- "hand_evaluator",
- "rand",
-]
-
-[[package]]
 name = "getrandom"
 version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -249,14 +232,6 @@ name = "glob"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b919933a397b79c37e33b77bb2aa3dc8eb6e165ad809e58ff75bc7db2e34574"
-
-[[package]]
-name = "hand_evaluator"
-version = "0.1.0"
-dependencies = [
- "bytepack",
- "lazy_static",
-]
 
 [[package]]
 name = "hermit-abi"
@@ -306,9 +281,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.8"
+version = "0.4.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14b6052be84e6b71ab17edffc2eeabf5c2c3ae1fdb464aae35ac50c67a44e1f7"
+checksum = "4fabed175da42fed1fa0746b0ea71f412aa9d35e76e95e59b192c64b9dc2bf8b"
 dependencies = [
  "cfg-if",
 ]
@@ -459,9 +434,11 @@ checksum = "26412eb97c6b088a6997e05f69403a802a92d520de2f8e63c2b65f9e0f47c4e8"
 name = "rust_poker"
 version = "0.1.0"
 dependencies = [
- "common",
- "equity_calculator",
- "hand_evaluator",
+ "bindgen",
+ "bytepack",
+ "crossbeam",
+ "lazy_static",
+ "rand",
 ]
 
 [[package]]

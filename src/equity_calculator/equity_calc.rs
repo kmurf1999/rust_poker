@@ -8,10 +8,11 @@ use rand::{SeedableRng, thread_rng, Rng};
 use rand::rngs::SmallRng;
 use rand::seq::SliceRandom;
 
-use hand_evaluator::{evaluate, Hand, CARDS};
-use common::{CARD_COUNT, HandRange};
+use crate::hand_evaluator::{evaluate, Hand, CARDS};
+use crate::hand_range::HandRange;
+use crate::constants::CARD_COUNT;
 
-use crate::combined_range::CombinedRange;
+use super::combined_range::CombinedRange;
 
 const MAX_PLAYERS: usize = 6;
 
@@ -436,7 +437,7 @@ pub fn remove_invalid_combos(ranges: &mut Vec<HandRange>, board_mask: u64) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use common::{ HandRange, get_card_mask };
+    use crate::hand_range::{ HandRange, get_card_mask };
     use test::Bencher;
 
     #[test]

@@ -1,5 +1,5 @@
-use common::HandRange;
-use hand_evaluator::Hand;
+use crate::hand_range::HandRange;
+use crate::hand_evaluator::Hand;
 
 // max player count
 const MAX_PLAYERS: usize = 6;
