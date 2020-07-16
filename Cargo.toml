@@ -2,20 +2,15 @@
 name = "rust_poker"
 version = "0.1.0"
 authors = ["ruffers9 <kwmurph2@asu.edu>"]
+license = "MIT OR Apache-2.0"
+license-file = "LICENSE"
 edition = "2018"
 
 [build-dependencies]
 bindgen = "0.53.1"
 
-# [workspace]
-# members = [
-#     "common",
-#     "hand_evaluator",
-#     "equity_calculator"
-#     ]
-
 [dependencies]
-lazy_static = "1.4.0" # global static arrays
+lazy_static = "1.4.0"
 bytepack = "0.4.1"
 rand = { version = "0.7", features = ["small_rng"] }
 crossbeam = "0.7.3"

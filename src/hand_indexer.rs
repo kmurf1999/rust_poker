@@ -6,18 +6,19 @@
 use std::ptr;
 
 // tell rust that we can share this between threads
-unsafe impl Sync for hand_indexer_t {}
-unsafe impl Send for hand_indexer_t {}
+unsafe impl Sync for hand_indexer_s {}
+unsafe impl Send for hand_indexer_s {}
 
 // include hand indexer bindings
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 static TOTAL_CARDS: &'static [usize; 4] = &[2, 5, 6, 7];
 
-impl hand_indexer_t {
-    /// Creates a new hand_indexer_t object
-    pub fn new() -> hand_indexer_t {
-        hand_indexer_t {
+/// Wrapper functions to interface with bindgen binding for hand_indexer_s C library
+impl hand_indexer_s {
+    /// Creates a new hand_indexer_s object
+    pub fn new() -> hand_indexer_s {
+        hand_indexer_s {
             cards_per_round: [0; 8usize],
             round_start: [0; 8usize],
             rounds: 0,
@@ -33,11 +34,16 @@ impl hand_indexer_t {
         }
     }
 
-    /**
-     * initialize hand indexer for rounds and cards per round
-     */
-    pub fn init(rounds: u32, cards_per_round: Vec<u8>) -> hand_indexer_t {
-        let mut hand_indexer = hand_indexer_t::new();
+    /// Initializes a new hand_indexer
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use rust_poker::hand_indexer_s;
+    /// let flop_indexer = hand_indexer_s::init(2, [2, 3].to_vec());
+    /// ```
+    pub fn init(rounds: u32, cards_per_round: Vec<u8>) -> hand_indexer_s {
+        let mut hand_indexer = hand_indexer_s::new();
         unsafe {
             assert!(hand_indexer_init(
                     rounds,
@@ -48,31 +54,44 @@ impl hand_indexer_t {
     }
 
 
-    /**
-     * Return number of indices in a round
-     */
+    /// Return number of indices in a round
     pub fn size(&self, round: u32) -> u64 {
         return unsafe { hand_indexer_size(self, round) };
     }
 
-    /**
-     * Gets the index for a set of cards
-     */
+    /// Gets the index for a set of cards
+    ///
+    /// # Example
+    /// ```
+    /// use rust_poker::hand_indexer_s;
+    /// let flop_indexer = hand_indexer_s::init(2, [2, 3].to_vec());
+    /// // first two cards are hole cards
+    /// let cards = [0u8, 1, 5, 6, 7];
+    /// let index = flop_indexer.get_index(&cards);
+    /// ```
     pub fn get_index(&self, cards: &[u8]) -> hand_index_t {
         unsafe {
             return hand_index_last(self, cards.as_ptr());
         }
     }
 
-    /**
-     * get a cannonical hand from an index
-     * @param index: 64bit hand index
-     * @param round: 0: preflop, 1: flop, ect.
-     *
-     * 8bit card is 4 * rank + suit
-     * get rank using card >> 2
-     * get suit using card & 3
-     */
+    /// Gets hand for a certain index
+    ///
+    /// # Arguments
+    ///
+    /// * `round` - round to get hand for
+    /// * `cards` - cuffer to push cards into
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use rust_poker::hand_indexer_s;
+    /// let flop_indexer = hand_indexer_s::init(2, [2, 3].to_vec());
+    /// let mut cards = [0u8; 5];
+    /// let hand_index = 400;
+    /// let round = 1;
+    /// flop_indexer.get_hand(round, hand_index, &mut cards);
+    /// ```
     pub fn get_hand(&self, round: u32, index: hand_index_t, cards: &mut [u8]) {
         unsafe {
             hand_unindex(self, round, index, cards.as_mut_ptr());

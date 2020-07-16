@@ -1,17 +1,17 @@
 use crate::hand_range::HandRange;
 use crate::hand_evaluator::Hand;
 
-// max player count
+/// Max player count
 const MAX_PLAYERS: usize = 6;
 
-// max combined range size
+/// Max combined range size
 const MAX_SIZE: usize = 10000;
 
 #[derive(Copy, Clone)]
+/// One valid combination of hole card hands
 pub struct Combo {
-    // mask of all cards in combo used for rejection sampling
+    /// Mask of all cards in combo used for rejection sampling
     pub card_mask: u64,
-    // hands
     pub hands: [Option<Hand>; MAX_PLAYERS],
 }
 
@@ -34,20 +34,23 @@ impl Combo {
     }
 }
 
+/// Structure to combine ranges in order to speed up rejection sampling
 pub struct CombinedRange {
-    // TODO player idx is incorrect
     pub players: usize,
+    /// Array of valid hole card combinations
     pub combos: Vec<Combo>
 }
 
 impl CombinedRange {
+    /// Creates new combined range
     pub fn new() -> CombinedRange {
         CombinedRange {
             players: 0,
             combos: Vec::new()
         }
     }
-    pub fn from_range(range: &HandRange, player_idx: usize) -> CombinedRange {
+    /// Creates a combined range from a hand range
+    fn from_range(range: &HandRange, player_idx: usize) -> CombinedRange {
         let mut c_range = CombinedRange::new();
 
         c_range.players = 1;
@@ -62,6 +65,7 @@ impl CombinedRange {
 
         return c_range;
     }
+    /// Creates a combined range from a list of hand ranges
     pub fn from_ranges(ranges: &Vec<HandRange>) -> Vec<CombinedRange> {
         let mut c_ranges: Vec<CombinedRange> = ranges.iter()
             .enumerate()
@@ -93,7 +97,7 @@ impl CombinedRange {
         return c_ranges;
     }
 
-    pub fn join(&mut self, other: &mut CombinedRange) -> CombinedRange {
+    fn join(&mut self, other: &mut CombinedRange) -> CombinedRange {
         let mut c_range = CombinedRange::new();
         c_range.players = self.players + other.players;
 
@@ -108,7 +112,7 @@ impl CombinedRange {
 
         return c_range;
     }
-    pub fn estimate_join_size(&self, other: &CombinedRange) -> u64 {
+    fn estimate_join_size(&self, other: &CombinedRange) -> u64 {
         let mut size = 0u64;
         for c1 in &self.combos {
             for c2 in &other.combos {

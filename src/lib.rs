@@ -7,7 +7,8 @@ extern crate rand;
 extern crate crossbeam;
 
 mod hand_indexer;
-pub use hand_indexer::hand_indexer_t;
+
+pub use hand_indexer::hand_indexer_s;
 
 pub mod hand_range;
 pub mod constants;

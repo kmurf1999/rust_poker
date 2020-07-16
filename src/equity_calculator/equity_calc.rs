@@ -16,7 +16,7 @@ use super::combined_range::CombinedRange;
 
 const MAX_PLAYERS: usize = 6;
 
-// structure to store results of a single thread
+/// structure to store results of a single thread
 struct ResultsBatch {
     wins_by_mask: [u32; 64],
     // wins_by_hand: [f64; CARD_TABLE_SIZE],
@@ -33,7 +33,7 @@ impl ResultsBatch {
     }
 }
 
-// stores total results of simulation
+/// stores total results of the simulation
 pub struct Results {
     wins: [u32; MAX_PLAYERS],
     ties: [f64; MAX_PLAYERS],
@@ -83,9 +83,25 @@ impl EquityCalc {
             sim_count: sim_count
         }
     }
-    /**
-     * @param n_games: min number of simulated games to run
-     */
+    /// Runs a monte carlo simulation to calculate range vs range equity
+    ///
+    /// Returns the equity for each player
+    ///
+    /// # Arguments
+    ///
+    /// * `hand_ranges` Array of hand ranges
+    /// * `board_mask` 64 bit mask of public cards
+    /// * `n_threads` Number of threads to use in simulation
+    /// * `sim_count` Number of games to simulate
+    ///
+    /// # Example
+    /// ```
+    /// use rust_poker::hand_range::{HandRange, get_card_mask};
+    /// use rust_poker::equity_calculator::EquityCalc;
+    /// let ranges = HandRange::from_str_arr(["random", "random"].to_vec());
+    /// let board_mask = get_card_mask("");
+    /// let equities = EquityCalc::start(&ranges, board_mask, 4, 1000);
+    /// ```
     pub fn start(hand_ranges: &Vec<HandRange>, board_mask: u64, n_threads: u8, sim_count: u64) -> Vec<f64> {
 
         let sim = Arc::new(EquityCalc::new(hand_ranges, board_mask, sim_count));

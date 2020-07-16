@@ -8,10 +8,12 @@ const SUITS_SHIFT: u8 = 48;
 const FLUSH_CHECK_MASK64: u64 = 0x8888u64 << SUITS_SHIFT;
 const FLUSH_CHECK_MASK32: u32 = 0x8888u32 << (SUITS_SHIFT - 32) as u32;
 
-// Bits 0-31: key to non flush lookup table
-// Bits 32-35: card counter
-// Bits 48-63: suit counter
-// Bits 64-128: Bit mask for all cards (suits in 16 bit groups)
+/// 64 bit representation of poker hand for use in evaluator
+///
+/// Bits 0-31: key to non flush lookup table
+/// Bits 32-35: card counter
+/// Bits 48-63: suit counter
+/// Bits 64-128: Bit mask for all cards (suits in 16 bit groups)
 #[derive(Debug, Copy, Clone)]
 pub struct Hand {
     key: u64,
@@ -19,35 +21,37 @@ pub struct Hand {
 }
 
 lazy_static! {
+    /// Table for bit card representation to 64bit one
     pub static ref CARDS: [Hand; 52] = init_card_constants();
 }
 
 impl Hand {
-    // construct a card from two hole cards
+    /// Create hand from hole cards
     pub fn from_hole_cards(c1: u8, c2: u8) -> Hand {
         return CARDS[usize::from(c1)] + CARDS[usize::from(c2)];
     }
-    // return first 64 bits
+    /// Return first 64 bits
     pub const fn get_key(self) -> u64 {
         self.key
     }
-    // return last 64 bits
+    /// Return last 64 bits
     pub const fn get_mask(self) -> u64 {
         self.mask
     }
-    // get rank key of card for lookup table
+    /// get rank key of card for lookup table
     pub const fn get_rank_key(self) -> usize {
         // get last 32 bits
         let key = self.key as u32;
         // cast to usize
         return key as usize;
     }
-    // return counter bits
+    /// Return counter bits
     pub const fn get_counters(self) -> u32 {
         return (self.key >> 32) as u32;
     }
-    // get flush key of card for lookup table
-    // return key, or 0
+    /// Get flush key of card for lookup table
+    ///
+    /// Returns 0 if there is no flush
     pub fn get_flush_key(self) -> usize {
         // if hand has flush, return key
         // check to prevent throwing overflow error
@@ -62,17 +66,25 @@ impl Hand {
             return 0;
         }
     }
-    // does hand have a flush
     pub fn has_flush(self) -> bool {
         return (self.get_key() & FLUSH_CHECK_MASK64) != 0;
     }
-    // return number of cards in hand
+    // Return number of cards in hand
     pub fn count(self) -> u32 {
         return (self.get_counters() >> (CARD_COUNT_SHIFT - 32)) & 0xf;
     }
     // contruct the empty hand
     // needed for evaluation
     // initializes suit counters
+    //
+    // # Example
+    //
+    // ```
+    // use rust_poker::hand_evaluator::{Hand, CARDS, evaluate};
+    //
+    // let hand = Hand::empty() + CARDS[0] + CARDS[1];
+    // let score = evaluate(&hand);
+    // ```
     pub fn empty() -> Hand {
         Hand {
             key: 0x3333u64 << SUITS_SHIFT,
@@ -80,7 +92,7 @@ impl Hand {
         }
     }
 
-    // get the number of cards for a suit
+    /// Get the number of cards for a suit
     pub fn suit_count(self, suit: u8) -> i32 {
         let shift = 4 * suit + (SUITS_SHIFT - 32);
         return (((self.get_counters() >> shift) & 0xf) as i32) - 3;
@@ -115,7 +127,7 @@ impl PartialEq for Hand {
 impl Eq for Hand {}
 
 
-pub fn init_card_constants() -> [Hand; 52] {
+fn init_card_constants() -> [Hand; 52] {
     let mut hands: [Hand; 52] = [Hand::empty(); 52];
 
     for c in 0..CARD_COUNT {

@@ -6,16 +6,15 @@ use std::fs::File;
 use std::iter::repeat;
 use bytepack::{LEPacker, LEUnpacker};
 
-// should recalculate perfhash offsets
+/// should recalculate perfhash offsets
 const RECALCULATE_OFFSETS: bool = false;
-// filename to write and read perf hash offset table
+/// filename to write and read perf hash offset table
 const HASH_OFFSETS_FILENAME: &str = "offset_table.dat";
 
-// divide value by 4096 to obtain the hand category
+/// divide value by 4096 to obtain the hand category
 const HAND_CATEGORY_OFFSET: u16 = 0x1000;
 const HAND_CATEGORY_SHIFT: u8 = 12;
 
-// Hand Categories
 const HIGH_CARD: u16 =       1 * HAND_CATEGORY_OFFSET;
 const PAIR: u16 =            2 * HAND_CATEGORY_OFFSET;
 const TWO_PAIR: u16 =        3 * HAND_CATEGORY_OFFSET;
@@ -26,17 +25,17 @@ const FULL_HOUSE: u16 =      7 * HAND_CATEGORY_OFFSET;
 const FOUR_OF_A_KIND: u16 =  8 * HAND_CATEGORY_OFFSET;
 const STRAIGHT_FLUSH: u16 =  9 * HAND_CATEGORY_OFFSET;
 
-// minimum number of cards to populate table with
+/// minimum number of cards to populate table with
 const MIN_CARDS: u8 = 2;
 const MAX_CARDS: u8 = 7;
 
 const PERF_HASH_ROW_SHIFT: usize = 12;
 const PERF_HASH_COLUMN_MASK: usize = (1 << PERF_HASH_ROW_SHIFT) - 1;
 
-// max rank key e.g. AAAAKKK
+/// max rank key e.g. AAAAKKK
 const MAX_KEY: usize = (4 * RANKS[12] + 3 * RANKS[11]) as usize + 1;
 
-// calculated using perfect hashing
+/// calculated using perfect hashing
 const RANK_TABLE_SIZE: usize = 86362;
 const FLUSH_TABLE_SIZE: usize = 8192;
 
@@ -49,10 +48,8 @@ fn read_perf_hash_file(filename: &str) -> Vec<u32> {
 }
 
 
-/**
- * Used for building lookup table
- * returns key for 64-bit group of ranks
- */
+// Used for building lookup table
+// returns key for 64-bit group of ranks
 fn get_key(ranks: u64, flush: bool) -> usize {
     let mut key: u64 = 0;
     for r in 0..RANK_COUNT {
@@ -62,18 +59,23 @@ fn get_key(ranks: u64, flush: bool) -> usize {
     return key as usize;
 }
 
+/// Evaluates a single hand and returns score
 pub fn evaluate(hand: &hand::Hand) -> u16 {
     return LOOKUP_TABLE.evaluate(hand);
 }
 
-// create global static evaluator
 lazy_static! {
+    /// Global static lookup table used for evaluation
     static ref LOOKUP_TABLE: Evaluator = Evaluator::init();
 }
 
+/// Singleton structure
 struct Evaluator {
+    /// Used to recalculate lookup table
     orig_lookup: Vec<u16>,
+    /// Stores scores of non flush hands
     rank_table: Vec<u16>,
+    /// Stores scores of flush hands
     flush_table: Vec<u16>,
     perf_hash_offsets: Vec<u32>
 }
