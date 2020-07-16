@@ -4,7 +4,7 @@ version = "0.1.1"
 authors = ["ruffers9 <kwmurph2@asu.edu>"]
 repository = "https://github.com/ruffers9/rust_poker"
 description = "Rust poker library"
-license-file = "MIT"
+license = "MIT"
 edition = "2018"
 
 [build-dependencies]
