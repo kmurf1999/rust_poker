@@ -4,11 +4,10 @@ use crate::constants::*;
 use std::num::Wrapping;
 use std::fs::File;
 use std::env;
+use std::path::{Path};
 use std::iter::repeat;
 use bytepack::{LEPacker, LEUnpacker};
 
-/// should recalculate perfhash offsets
-const RECALCULATE_OFFSETS: bool = false;
 /// filename to write and read perf hash offset table
 const HASH_OFFSETS_FILENAME: &str = "offset_table.dat";
 
@@ -40,13 +39,13 @@ const MAX_KEY: usize = (4 * RANKS[12] + 3 * RANKS[11]) as usize + 1;
 const RANK_TABLE_SIZE: usize = 86362;
 const FLUSH_TABLE_SIZE: usize = 8192;
 
-fn read_perf_hash_file(filename: &str) -> Vec<u32> {
-    let filename = env::var("OUT_DIR").unwrap() + "/" + filename;
-    let mut file = File::open(filename).unwrap();
-    let num_samples : u32 = file.unpack().unwrap();
+fn read_perf_hash_file(filename: &str) -> Result<Vec<u32>, std::io::Error> {
+    let fullpath = Path::new(&env::var("OUT_DIR").unwrap()).join(filename);
+    let mut file = File::open(fullpath)?;
+    let num_samples : u32 = file.unpack()?;
     let mut samples : Vec<u32> = repeat(0u32).take(num_samples as usize).collect();
     file.unpack_exact(&mut samples[..]).unwrap();
-    return samples;
+    Ok(samples)
 }
 
 
@@ -79,6 +78,7 @@ struct Evaluator {
     rank_table: Vec<u16>,
     /// Stores scores of flush hands
     flush_table: Vec<u16>,
+    calc_offsets: bool,
     perf_hash_offsets: Vec<u32>
 }
 
@@ -88,28 +88,37 @@ impl Evaluator {
         let rank_table: Vec<u16>;
         let orig_lookup: Vec<u16>;
         let perf_hash_offsets: Vec<u32>;
+        let calc_offsets: bool;
 
-        if RECALCULATE_OFFSETS {
-            rank_table = vec![0; MAX_KEY + 1];
-            orig_lookup = vec![0; MAX_KEY + 1];
-            perf_hash_offsets = vec![0; 100000];
-        } else {
-            orig_lookup = Vec::with_capacity(0);
-            rank_table = vec![0; RANK_TABLE_SIZE];
-            perf_hash_offsets = read_perf_hash_file(HASH_OFFSETS_FILENAME)
+        match read_perf_hash_file(HASH_OFFSETS_FILENAME) {
+            Ok(offsets) => {
+                // load offset table
+                orig_lookup = Vec::with_capacity(0);
+                rank_table = vec![0; RANK_TABLE_SIZE];
+                perf_hash_offsets = offsets;
+                calc_offsets = false;
+            },
+            Err(_) => {
+                // calculate offsets
+                rank_table = vec![0; MAX_KEY + 1];
+                orig_lookup = vec![0; MAX_KEY + 1];
+                perf_hash_offsets = vec![0; 100000];
+                calc_offsets = true;
+            }
         }
 
         let mut eval = Evaluator {
             orig_lookup,
             perf_hash_offsets,
             rank_table,
+            calc_offsets,
             flush_table: vec![0; FLUSH_TABLE_SIZE],
         };
 
         // init lookup table
         eval.static_init();
 
-        if RECALCULATE_OFFSETS {
+        if calc_offsets {
             eval.recalculate_perfect_hash_offsets();
         }
 
@@ -216,7 +225,7 @@ impl Evaluator {
             if flush {
                 self.flush_table[key] = *hand_value;
             } else {
-                if RECALCULATE_OFFSETS {
+                if self.calc_offsets {
                     self.orig_lookup[key] = *hand_value;
                 } else {
                     // Can't call perf_hash again
@@ -322,8 +331,8 @@ impl Evaluator {
         }
 
         // write perf_hash_offsets to file
-        let filename = env::var("OUT_DIR").unwrap() + "/" + HASH_OFFSETS_FILENAME;
-        let mut file = File::create(filename).unwrap();
+        let fullpath = Path::new(&env::var("OUT_DIR").unwrap()).join(HASH_OFFSETS_FILENAME);
+        let mut file = File::create(fullpath).unwrap();
         file.pack(rows.len() as u32).unwrap();
         file.pack_all(&self.perf_hash_offsets[0..rows.len()]).unwrap();
 
