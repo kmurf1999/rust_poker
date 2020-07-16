@@ -2,7 +2,6 @@
 name = "rust_poker"
 version = "0.1.0"
 authors = ["ruffers9 <kwmurph2@asu.edu>"]
-license = "MIT OR Apache-2.0"
 license-file = "LICENSE"
 edition = "2018"
 

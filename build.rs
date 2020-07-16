@@ -6,19 +6,19 @@ use std::path::PathBuf;
 fn main() {
     // link library
     // since this is a workspace, we are still searching relative to crate root
-    println!("cargo:rustc-link-search=src/hand_indexer");
+    println!("cargo:rustc-link-search=hand_indexer");
     println!("cargo:rustc-link-lib=static=handindexer");
 
 
     // Tell cargo to invalidate the built crate whenever the wrapper changes
-    println!("cargo:rerun-if-changed=src/hand_indexer/wrapper.h");
+    println!("cargo:rerun-if-changed=hand_indexer/wrapper.h");
 
 
     // The bindgen::Builder is the main entry point
     // to bindgen, and lets you build up options for
     // the resulting bindings.
     let bindings = bindgen::Builder::default()
-        .header("src/hand_indexer/wrapper.h")
+        .header("hand_indexer/wrapper.h")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
         // Finish the builder and generate the bindings.
         .generate()
