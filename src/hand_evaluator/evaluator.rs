@@ -3,6 +3,7 @@ use crate::constants::*;
 
 use std::num::Wrapping;
 use std::fs::File;
+use std::env;
 use std::iter::repeat;
 use bytepack::{LEPacker, LEUnpacker};
 
@@ -40,6 +41,7 @@ const RANK_TABLE_SIZE: usize = 86362;
 const FLUSH_TABLE_SIZE: usize = 8192;
 
 fn read_perf_hash_file(filename: &str) -> Vec<u32> {
+    let filename = env::var("OUT_DIR").unwrap() + "/" + filename;
     let mut file = File::open(filename).unwrap();
     let num_samples : u32 = file.unpack().unwrap();
     let mut samples : Vec<u32> = repeat(0u32).take(num_samples as usize).collect();
@@ -320,8 +322,8 @@ impl Evaluator {
         }
 
         // write perf_hash_offsets to file
-        // let fullpath = env::var("PWD").unwrap() + "/static/" + HASH_OFFSETS_FILENAME;
-        let mut file = File::create(HASH_OFFSETS_FILENAME).unwrap();
+        let filename = env::var("OUT_DIR").unwrap() + "/" + HASH_OFFSETS_FILENAME;
+        let mut file = File::create(filename).unwrap();
         file.pack(rows.len() as u32).unwrap();
         file.pack_all(&self.perf_hash_offsets[0..rows.len()]).unwrap();
 
