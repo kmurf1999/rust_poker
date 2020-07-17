@@ -1,8 +1,10 @@
 # RustPoker
 
+[![Build Status](https://travis-ci.org/ruffers9/rust_poker.svg?branch=master)](https://travis-ci.org/ruffers9/rust_poker)
+[![docs.rs](https://docs.rs/rust_poker/badge.svg?version=0.1.3)](https://docs.rs/rust_poker)
+
 Fast range vs. range equity calculation for poker written in rust
 
- - [Docs](https://docs.rs/rust_poker/0.1.0/rust_poker/)
  - [Crates.io](https://crates.io/crates/rust_poker)
 
 ## Hand Evaluator
