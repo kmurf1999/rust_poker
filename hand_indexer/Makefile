@@ -1,6 +1,8 @@
 # new make file
-LIBTOOL=libtool
-STATIC=-static
+# LIBTOOL=libtool
+LIBTOOL=ar rcs
+
+#STATIC=-static
 SRC        :=$(addprefix src/,deck.c hand_index.c)
 OBJ        :=$(SRC:.c=.o)
 
@@ -11,7 +13,7 @@ TEST_SRC=src/check-main.c
 TESTCFLAGS=-mmacosx-version-min=10.7
 
 $(LIBNAME): $(OBJ)
-	$(LIBTOOL) $(STATIC) -o $@ $(OBJ)
+	$(LIBTOOL) $@ $(OBJ)
 
 %.o: %.c
 	$(CC) $(LIB_FLAGS) -c -o $@ $<
