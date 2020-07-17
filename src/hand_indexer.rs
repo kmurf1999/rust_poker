@@ -46,7 +46,7 @@ impl hand_indexer_s {
         let mut hand_indexer = hand_indexer_s::new();
         unsafe {
             assert!(hand_indexer_init(
-                    rounds,
+                    rounds.into(),
                     cards_per_round.as_ptr(),
                     &mut hand_indexer));
         }
@@ -56,7 +56,7 @@ impl hand_indexer_s {
 
     /// Return number of indices in a round
     pub fn size(&self, round: u32) -> u64 {
-        return unsafe { hand_indexer_size(self, round) };
+        return unsafe { hand_indexer_size(self, round.into()) };
     }
 
     /// Gets the index for a set of cards
@@ -94,7 +94,7 @@ impl hand_indexer_s {
     /// ```
     pub fn get_hand(&self, round: u32, index: hand_index_t, cards: &mut [u8]) {
         unsafe {
-            hand_unindex(self, round, index, cards.as_mut_ptr());
+            hand_unindex(self, round.into(), index, cards.as_mut_ptr());
         }
     }
 }
