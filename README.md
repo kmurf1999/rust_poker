@@ -11,12 +11,11 @@ Fast range vs. range equity calculation for poker written in rust
 
 ### Example
 
-```
+```rust
 use rust_poker::equity_calculator;
 use rust_poker::hand_range::HandRange;
 let n_threads = 4;
 let n_games = 10000;
-
 ```
 
 
