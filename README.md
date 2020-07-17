@@ -9,6 +9,18 @@ Fast range vs. range equity calculation for poker written in rust
  - Evaluates hands with any number of cards from 0 to 7
  - Higher score is better
 
+### Example
+
+```
+use rust_poker::equity_calculator;
+use rust_poker::hand_range::HandRange;
+let n_threads = 4;
+let n_games = 10000;
+
+```
+
+
+
 ## Equity Calculator
  - Runs a multithreaded monte-carlo simulation to calculate range vs range equities
  - Supports up to 6 players
