@@ -2,17 +2,19 @@ extern crate bindgen;
 
 use std::env;
 use std::path::PathBuf;
+use cmake::Config;
 
 fn main() {
+    // build static library
+    let dst = Config::new("hand_indexer").build();
+
     // link library
     // since this is a workspace, we are still searching relative to crate root
-    println!("cargo:rustc-link-search=hand_indexer");
+    println!("cargo:rustc-link-search={}", dst.display());
     println!("cargo:rustc-link-lib=static=handindexer");
-
 
     // Tell cargo to invalidate the built crate whenever the wrapper changes
     println!("cargo:rerun-if-changed=hand_indexer/wrapper.h");
-
 
     // The bindgen::Builder is the main entry point
     // to bindgen, and lets you build up options for

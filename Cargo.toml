@@ -9,6 +9,7 @@ edition = "2018"
 
 [build-dependencies]
 bindgen = "0.53.1"
+cmake = "0.1"
 
 [dependencies]
 lazy_static = "1.4.0"
