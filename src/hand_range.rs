@@ -14,18 +14,6 @@ use crate::constants::*;
 #[derive(Debug, Clone, Copy)]
 pub struct HoleCards(pub u8, pub u8);
 
-/// char to u8 rank table
-pub static RANKS: &'static [char; 13] = &[
-    '2', '3', '4', '5', '6', '7', '8', '9',
-    'T', 'J', 'Q', 'K', 'A'
-];
-
-/// char to u8 suit table
-pub static SUITS: &'static [char; 4] = &[
-    's', 'h', 'd', 'c'
-];
-
-
 impl HoleCards {
     /// Writes hole cards to string
     /// 
@@ -38,10 +26,10 @@ impl HoleCards {
     /// ```
     pub fn to_string(&self) -> String {
         let chars: Vec<char> = vec![
-            RANKS[usize::from(self.0 >> 2)],
-            SUITS[usize::from(self.0 & 3)],
-            RANKS[usize::from(self.1 >> 2)],
-            SUITS[usize::from(self.1 & 3)]
+            RANK_TO_CHAR[usize::from(self.0 >> 2)],
+            SUIT_TO_CHAR[usize::from(self.0 & 3)],
+            RANK_TO_CHAR[usize::from(self.1 >> 2)],
+            SUIT_TO_CHAR[usize::from(self.1 & 3)]
         ];
         return String::from_iter(chars);
     }
@@ -87,7 +75,7 @@ impl Eq for HoleCards {}
 pub struct HandRange {
     /// A vector of possible hole card combinations
     pub hands: Vec<HoleCards>,
-    char_vec:  Vec<char>
+    pub char_vec:  Vec<char>
 }
 
 impl HandRange {
@@ -109,10 +97,13 @@ impl HandRange {
     ///
     /// ```
     /// use rust_poker::hand_range::HandRange;
-    /// let ranges = HandRange::from_str_arr(["22+", "AKs"].to_vec());
+    /// let ranges = HandRange::from_strings(["22+".to_string(), "AKs".to_string()].to_vec());
     /// ```
-    pub fn from_str_arr(arr: Vec<&str>) -> Vec<Self> {
-        return arr.iter().map(|x| HandRange::from_str(x)).collect();
+    pub fn from_strings(arr: Vec<String>) -> Vec<Self> {
+        return arr
+            .iter()
+            .map(|s| HandRange::from_string(s.to_owned()))
+            .collect();
     }
 
     /// Create a Handrange from a string
@@ -125,9 +116,9 @@ impl HandRange {
     ///
     /// ```
     /// use rust_poker::hand_range::HandRange;
-    /// let range = HandRange::from_str("JJ+");
+    /// let range = HandRange::from_string("JJ+".to_string());
     /// ```
-    pub fn from_str(text: &str) -> Self {
+    pub fn from_string(text: String) -> Self {
         let mut range: HandRange = HandRange::new();
 
         if text == "random" {
@@ -383,6 +374,20 @@ pub fn get_card_mask(text: &str) -> u64 {
     return cards;
 }
 
+pub fn mask_to_string(card_mask: u64) -> String {
+    let mut card_str = String::new();
+    for i in 0..CARD_COUNT {
+        if ((1u64 << i) & card_mask) != 0 {
+            let rank = i >> 2;
+            let suit = i & 3;
+            card_str.push(RANK_TO_CHAR[usize::from(rank)]);
+            card_str.push(SUIT_TO_CHAR[usize::from(suit)]);
+        }
+
+    }
+    return card_str;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -465,38 +470,38 @@ mod tests {
 
     #[test]
     fn test_hand_range_random() {
-        let c = HandRange::from_str("random");
+        let c = HandRange::from_string("random".to_string());
         assert_eq!(c.hands.len(), 1326);
     }
 
     #[test]
     fn test_hand_range_from_str() {
         // valid: paired hand
-        let mut c = HandRange::from_str("33");
+        let mut c = HandRange::from_string("33".to_string());
         assert_eq!(c.hands.len(), 6);
         // valid: offsuit hand
-        c = HandRange::from_str("a2o");
+        c = HandRange::from_string("a2o".to_string());
         assert_eq!(c.hands.len(), 12);
         // valid: suited hand
-        c = HandRange::from_str("a2s");
+        c = HandRange::from_string("a2s".to_string());
         assert_eq!(c.hands.len(), 4);
         // valid: hand +
-        c = HandRange::from_str("a2+");
+        c = HandRange::from_string("a2+".to_string());
         assert_eq!(c.hands.len(), 198);
         // valid: hand o+
-        c = HandRange::from_str("a2o+");
+        c = HandRange::from_string("a2o+".to_string());
         assert_eq!(c.hands.len(), 150);
         // valid: hand s+
-        c = HandRange::from_str("a2s+");
+        c = HandRange::from_string("a2s+".to_string());
         assert_eq!(c.hands.len(), 48);
         // valid: two ranges
-        c = HandRange::from_str("22,a2s+");
+        c = HandRange::from_string("22,a2s+".to_string());
         assert_eq!(c.hands.len(), 54);
         // valid: overlapping ranges
-        c = HandRange::from_str("a2s+,a4s+");
+        c = HandRange::from_string("a2s+,a4s+".to_string());
         assert_eq!(c.hands.len(), 48);
         // valid: specific suits
-        c = HandRange::from_str("as2h,2h3d");
+        c = HandRange::from_string("as2h,2h3d".to_string());
         assert_eq!(c.hands.len(), 2);
     }
 }

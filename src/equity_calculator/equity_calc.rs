@@ -9,12 +9,76 @@ use rand::rngs::SmallRng;
 use rand::seq::SliceRandom;
 
 use crate::hand_evaluator::{evaluate, Hand, CARDS};
-use crate::hand_range::HandRange;
+use crate::hand_range::{HandRange, mask_to_string};
 use crate::constants::CARD_COUNT;
 
 use super::combined_range::CombinedRange;
 
 const MAX_PLAYERS: usize = 6;
+
+/// Runs a monte carlo simulation to calculate range vs range equity
+///
+/// Returns the equity for each player
+///
+/// # Arguments
+///
+/// * `hand_ranges` Array of hand ranges
+/// * `board_mask` 64 bit mask of public cards
+/// * `n_threads` Number of threads to use in simulation
+/// * `sim_count` Number of games to simulate
+///
+/// # Example
+/// ```
+/// use rust_poker::hand_range::{HandRange, get_card_mask};
+/// use rust_poker::equity_calculator::calc_equity;
+/// let ranges = HandRange::from_strings(["random".to_string(), "random".to_string()].to_vec());
+/// let board_mask = get_card_mask("");
+/// let equities = calc_equity(&ranges, board_mask, 4, 1000);
+/// ```
+pub fn calc_equity(hand_ranges: &Vec<HandRange>, board_mask: u64, n_threads: u8, sim_count: u64) -> Vec<f64> {
+
+    if hand_ranges.len() < 2 || hand_ranges.len() > 6 {
+        panic!("Invalid number of hand_ranges");
+    }
+
+    let sim = Arc::new(Simulator::new(hand_ranges, board_mask, sim_count));
+
+    // TODO really bad way to do this,
+    // but if ranges are overlapping completely return 50% equity
+    for c in &sim.combined_ranges {
+        if c.combos.len() == 0 {
+            println!("r1 {} r2 {} board {}",
+                     hand_ranges[0].char_vec.iter().collect::<String>(),
+                     hand_ranges[1].char_vec.iter().collect::<String>(),
+                     mask_to_string(board_mask));
+            return vec![0f64; sim.n_players];
+        }
+    }
+
+    let mut rng = thread_rng();
+
+    crossbeam::scope(|scope| {
+        for _ in 0..n_threads {
+            let sim = Arc::clone(&sim);
+            let mut rng = SmallRng::from_rng(&mut rng).unwrap();
+            scope.spawn(move |_| {
+                sim.run_monte_carlo(&mut rng);
+            });
+        }
+    }).unwrap();
+
+    // get results
+    let results =  sim.results.read().unwrap();
+
+    // calc equities
+    let mut equities = vec![0.0; sim.n_players];
+    for i in 0..sim.n_players {
+        equities[i] += results.wins[i] as f64;
+        equities[i] += results.ties[i];
+        equities[i] /= results.n_games as f64;
+    }
+    return equities;
+}
 
 /// structure to store results of a single thread
 struct ResultsBatch {
@@ -54,8 +118,8 @@ impl Results {
     }
 }
 
-// equity calculator main structure
-pub struct EquityCalc {
+/// equity calculator main structure
+struct Simulator {
     // hand_ranges: Vec<CardRange>,
     combined_ranges: Vec<CombinedRange>,
     board_mask: u64,
@@ -66,13 +130,13 @@ pub struct EquityCalc {
     sim_count: u64 // target number of games
 }
 
-impl EquityCalc {
-    fn new(hand_ranges: &Vec<HandRange>, board_mask: u64, sim_count: u64) -> EquityCalc {
+impl Simulator {
+    fn new(hand_ranges: &Vec<HandRange>, board_mask: u64, sim_count: u64) -> Simulator {
 
         let mut hand_ranges = hand_ranges.to_owned();
         remove_invalid_combos(&mut hand_ranges, board_mask);
 
-        EquityCalc {
+        Simulator {
             // hand_ranges: hand_ranges.to_vec(),
             combined_ranges: CombinedRange::from_ranges(&hand_ranges),
             board_mask: board_mask,
@@ -83,62 +147,6 @@ impl EquityCalc {
             sim_count: sim_count
         }
     }
-    /// Runs a monte carlo simulation to calculate range vs range equity
-    ///
-    /// Returns the equity for each player
-    ///
-    /// # Arguments
-    ///
-    /// * `hand_ranges` Array of hand ranges
-    /// * `board_mask` 64 bit mask of public cards
-    /// * `n_threads` Number of threads to use in simulation
-    /// * `sim_count` Number of games to simulate
-    ///
-    /// # Example
-    /// ```
-    /// use rust_poker::hand_range::{HandRange, get_card_mask};
-    /// use rust_poker::equity_calculator::EquityCalc;
-    /// let ranges = HandRange::from_str_arr(["random", "random"].to_vec());
-    /// let board_mask = get_card_mask("");
-    /// let equities = EquityCalc::start(&ranges, board_mask, 4, 1000);
-    /// ```
-    pub fn start(hand_ranges: &Vec<HandRange>, board_mask: u64, n_threads: u8, sim_count: u64) -> Vec<f64> {
-
-        let sim = Arc::new(EquityCalc::new(hand_ranges, board_mask, sim_count));
-
-        // TODO really bad way to do this,
-        // but if ranges are overlapping completely return 50% equity
-        for c in &sim.combined_ranges {
-            if c.combos.len() == 0 {
-                panic!("invalid params");
-            }
-        }
-
-        let mut rng = thread_rng();
-
-        crossbeam::scope(|scope| {
-            for _ in 0..n_threads {
-                let sim = Arc::clone(&sim);
-                let mut rng = SmallRng::from_rng(&mut rng).unwrap();
-                scope.spawn(move |_| {
-                    sim.run_monte_carlo(&mut rng);
-                });
-            }
-        }).unwrap();
-
-        // get results
-        let results =  sim.results.read().unwrap();
-
-        // calc equities
-        let mut equities = vec![0.0; sim.n_players];
-        for i in 0..sim.n_players {
-            equities[i] += results.wins[i] as f64;
-            equities[i] += results.ties[i];
-            equities[i] /= results.n_games as f64;
-        }
-        return equities;
-    }
-
 
     // fn sim_random_walk<R: Rng>(&self, rng: &mut R) {
     //     // self.fixed board
@@ -399,7 +407,7 @@ fn randomize_board<R: Rng>(rng: &mut R, board: &mut Hand,
 }
 
 // construct a Hand object from board mask
-fn get_board_from_bit_mask(mask: u64) -> Hand {
+pub fn get_board_from_bit_mask(mask: u64) -> Hand {
     let mut board = Hand::empty();
     for c in 0..usize::from(CARD_COUNT) {
         if (mask & (1u64 << c)) != 0 {
@@ -458,11 +466,21 @@ mod tests {
 
     #[test]
     fn test_remove_invalid_combos() {
-        let mut ranges = HandRange::from_str_arr(["AA", "random"].to_vec());
+        let mut ranges = HandRange::from_strings(["AA".to_string(), "random".to_string()].to_vec());
         let board_mask = get_card_mask("Ah2s3c");
         assert_eq!(ranges[0].hands.len(), 6);
         remove_invalid_combos(&mut ranges, board_mask);
         assert_eq!(ranges[0].hands.len(), 3);
+    }
+
+    #[test]
+    fn test_calc() {
+        let ranges = HandRange::from_strings([
+                "2s2h,3s3h,Qs8h,Qs9h,QsTh,QsJh,Ks2h,Ks3h,Ks4h,Ks5h,Ks6h,Ks7h,Ks8h,As2h,As3h,As4h,3sQs,4sQs,5sQs,6sQs,7sQs,8sQs,9sQs,2sKs,3sKs,4sKs,5sKs,6sKs,7sKs,2sAs".to_string(),
+                "random".to_string()].to_vec());
+        const THREADS: u8 = 4;
+        const SIM_COUNT: u64 = 3000;
+        let eq = calc_equity(&ranges, 0, THREADS, SIM_COUNT);
     }
 
     #[bench]
@@ -472,10 +490,10 @@ mod tests {
         const ERROR: f64 = 0.01;
         const THREADS: u8 = 4;
         const SIM_COUNT: u64 = 30000;
-        let ranges = HandRange::from_str_arr(["random", "random"].to_vec());
+        let ranges = HandRange::from_strings(["random".to_string(), "random".to_string()].to_vec());
         let board_mask = get_card_mask("");
         b.iter(|| {
-            let eq = EquityCalc::start(&ranges, board_mask, THREADS, SIM_COUNT);
+            let eq = calc_equity(&ranges, board_mask, THREADS, SIM_COUNT);
             assert!(eq[0] >  0.5 - ERROR);
             assert!(eq[0] <  0.5 + ERROR);
         });

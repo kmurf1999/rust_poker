@@ -40,7 +40,8 @@ const RANK_TABLE_SIZE: usize = 86362;
 const FLUSH_TABLE_SIZE: usize = 8192;
 
 fn read_perf_hash_file(filename: &str) -> Result<Vec<u32>, std::io::Error> {
-    let fullpath = Path::new(&env::var("OUT_DIR").unwrap()).join(filename);
+    let out_dir = env::var("OUT_DIR").unwrap();
+    let fullpath = Path::new(&out_dir).join(filename);
     let mut file = File::open(fullpath)?;
     let num_samples : u32 = file.unpack()?;
     let mut samples : Vec<u32> = repeat(0u32).take(num_samples as usize).collect();

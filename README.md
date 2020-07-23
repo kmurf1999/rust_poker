@@ -28,12 +28,12 @@ let score = evaluate(&hand);
 
 ```rust
 use rust_poker::hand_range::{HandRange, get_card_mask};
-use rust_poker::equity_calculator::EquityCalc;
+use rust_poker::equity_calculator::calc_equity;
 let ranges = HandRange::from_str_arr(["AK,22+", "random"].to_vec());
 let public_cards = get_card_mask("2h3d4c");
 let n_games = 10000;
 let n_threads = 4;
-let equities = EquityCalc::start(&ranges, public_cards, n_threads, n_games);
+let equities = calc_equity(&ranges, public_cards, n_threads, n_games);
 ```
 
 # Credit

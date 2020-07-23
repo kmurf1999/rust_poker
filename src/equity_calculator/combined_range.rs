@@ -12,6 +12,7 @@ const MAX_SIZE: usize = 10000;
 pub struct Combo {
     /// Mask of all cards in combo used for rejection sampling
     pub card_mask: u64,
+    /// Option vector of hands
     pub hands: [Option<Hand>; MAX_PLAYERS],
 }
 

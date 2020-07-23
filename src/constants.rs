@@ -5,6 +5,17 @@ pub const CARD_COUNT: u8 = 52;
 /// (2 -> A)
 pub const RANK_COUNT: u8 = 13;
 
+/// char to u8 rank table
+pub const RANK_TO_CHAR: &'static [char; 13] = &[
+    '2', '3', '4', '5', '6', '7', '8', '9',
+    'T', 'J', 'Q', 'K', 'A'
+];
+
+/// char to u8 suit table
+pub static SUIT_TO_CHAR: &'static [char; 4] = &[
+    's', 'h', 'd', 'c'
+];
+
 /// Tables of unique primes for hashing hands
 pub const RANKS: &'static [u64; 13] = &[
     8192, 32769, 69632, 237568, 593920,
