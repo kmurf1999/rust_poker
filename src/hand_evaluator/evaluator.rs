@@ -40,7 +40,7 @@ const RANK_TABLE_SIZE: usize = 86362;
 const FLUSH_TABLE_SIZE: usize = 8192;
 
 fn read_perf_hash_file(filename: &str) -> Result<Vec<u32>, std::io::Error> {
-    let out_dir = env::var("OUT_DIR").unwrap();
+    let out_dir = env::var("OUT_DIR").expect("OUT_DIR env var for perfect hash file not set");
     let fullpath = Path::new(&out_dir).join(filename);
     let mut file = File::open(fullpath)?;
     let num_samples: u32 = file.unpack()?;
