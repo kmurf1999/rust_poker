@@ -1,6 +1,6 @@
 # RustPoker
 
-[![Build Status](https://travis-ci.org/ruffers9/rust_poker.svg?branch=master)](https://travis-ci.org/ruffers9/rust_poker)
+[![Build Status](https://travis-ci.org/kmurf1999/rust_poker.svg?branch=master)](https://travis-ci.org/kmurf1999/rust_poker)
 [![docs.rs](https://docs.rs/rust_poker/badge.svg?version=0.1.3)](https://docs.rs/rust_poker)
 
 Fast range vs. range equity calculation for poker written in rust
