@@ -1,12 +1,12 @@
 use super::hand;
 use crate::constants::*;
 
-use std::num::Wrapping;
-use std::fs::File;
-use std::env;
-use std::path::{Path};
-use std::iter::repeat;
 use bytepack::{LEPacker, LEUnpacker};
+use std::env;
+use std::fs::File;
+use std::iter::repeat;
+use std::num::Wrapping;
+use std::path::Path;
 
 /// filename to write and read perf hash offset table
 const HASH_OFFSETS_FILENAME: &str = "offset_table.dat";
@@ -15,15 +15,15 @@ const HASH_OFFSETS_FILENAME: &str = "offset_table.dat";
 const HAND_CATEGORY_OFFSET: u16 = 0x1000;
 const HAND_CATEGORY_SHIFT: u8 = 12;
 
-const HIGH_CARD: u16 =       1 * HAND_CATEGORY_OFFSET;
-const PAIR: u16 =            2 * HAND_CATEGORY_OFFSET;
-const TWO_PAIR: u16 =        3 * HAND_CATEGORY_OFFSET;
+const HIGH_CARD: u16 = 1 * HAND_CATEGORY_OFFSET;
+const PAIR: u16 = 2 * HAND_CATEGORY_OFFSET;
+const TWO_PAIR: u16 = 3 * HAND_CATEGORY_OFFSET;
 const THREE_OF_A_KIND: u16 = 4 * HAND_CATEGORY_OFFSET;
-const STRAIGHT: u16 =        5 * HAND_CATEGORY_OFFSET;
-const FLUSH: u16 =           6 * HAND_CATEGORY_OFFSET;
-const FULL_HOUSE: u16 =      7 * HAND_CATEGORY_OFFSET;
-const FOUR_OF_A_KIND: u16 =  8 * HAND_CATEGORY_OFFSET;
-const STRAIGHT_FLUSH: u16 =  9 * HAND_CATEGORY_OFFSET;
+const STRAIGHT: u16 = 5 * HAND_CATEGORY_OFFSET;
+const FLUSH: u16 = 6 * HAND_CATEGORY_OFFSET;
+const FULL_HOUSE: u16 = 7 * HAND_CATEGORY_OFFSET;
+const FOUR_OF_A_KIND: u16 = 8 * HAND_CATEGORY_OFFSET;
+const STRAIGHT_FLUSH: u16 = 9 * HAND_CATEGORY_OFFSET;
 
 /// minimum number of cards to populate table with
 const MIN_CARDS: u8 = 2;
@@ -43,12 +43,11 @@ fn read_perf_hash_file(filename: &str) -> Result<Vec<u32>, std::io::Error> {
     let out_dir = env::var("OUT_DIR").unwrap();
     let fullpath = Path::new(&out_dir).join(filename);
     let mut file = File::open(fullpath)?;
-    let num_samples : u32 = file.unpack()?;
-    let mut samples : Vec<u32> = repeat(0u32).take(num_samples as usize).collect();
+    let num_samples: u32 = file.unpack()?;
+    let mut samples: Vec<u32> = repeat(0u32).take(num_samples as usize).collect();
     file.unpack_exact(&mut samples[..]).unwrap();
     Ok(samples)
 }
-
 
 // Used for building lookup table
 // returns key for 64-bit group of ranks
@@ -56,7 +55,11 @@ fn get_key(ranks: u64, flush: bool) -> usize {
     let mut key: u64 = 0;
     for r in 0..RANK_COUNT {
         key += ((ranks >> r * 4) & 0xf)
-            * (if flush { FLUSH_RANKS[usize::from(r)] } else { RANKS[usize::from(r)] });
+            * (if flush {
+                FLUSH_RANKS[usize::from(r)]
+            } else {
+                RANKS[usize::from(r)]
+            });
     }
     return key as usize;
 }
@@ -80,12 +83,11 @@ struct Evaluator {
     /// Stores scores of flush hands
     flush_table: Vec<u16>,
     calc_offsets: bool,
-    perf_hash_offsets: Vec<u32>
+    perf_hash_offsets: Vec<u32>,
 }
 
 impl Evaluator {
     pub fn init() -> Self {
-
         let rank_table: Vec<u16>;
         let orig_lookup: Vec<u16>;
         let perf_hash_offsets: Vec<u32>;
@@ -98,7 +100,7 @@ impl Evaluator {
                 rank_table = vec![0; RANK_TABLE_SIZE];
                 perf_hash_offsets = offsets;
                 calc_offsets = false;
-            },
+            }
             Err(_) => {
                 // calculate offsets
                 rank_table = vec![0; MAX_KEY + 1];
@@ -123,7 +125,6 @@ impl Evaluator {
             eval.recalculate_perfect_hash_offsets();
         }
 
-
         return eval;
     }
 
@@ -137,7 +138,8 @@ impl Evaluator {
 
     fn perf_hash(&self, key: usize) -> usize {
         // works because of overflow
-        return (Wrapping(key as u32) + Wrapping(self.perf_hash_offsets[key >> PERF_HASH_ROW_SHIFT])).0 as usize
+        return (Wrapping(key as u32) + Wrapping(self.perf_hash_offsets[key >> PERF_HASH_ROW_SHIFT]))
+            .0 as usize;
     }
 
     fn static_init(&mut self) {
@@ -160,7 +162,16 @@ impl Evaluator {
             for r2 in 0..r1 {
                 // (2u64 << 4 * r1) + (2u64 << 4 * r2)
                 // each two pair combination
-                self.populate((2u64 << 4 * r1) + (2u64 << 4 * r2), 4, &mut hand_value, rc, r2, 0, 0, false);
+                self.populate(
+                    (2u64 << 4 * r1) + (2u64 << 4 * r2),
+                    4,
+                    &mut hand_value,
+                    rc,
+                    r2,
+                    0,
+                    0,
+                    false,
+                );
             }
         }
 
@@ -177,7 +188,16 @@ impl Evaluator {
         self.populate(0x1000000001111u64, 5, &mut hand_value, rc, rc, rc, 3, false);
         for r in 4..rc {
             // every other straight
-            self.populate(0x11111u64 << 4 * (r - 4), 5, &mut hand_value, rc, rc, rc, r, false);
+            self.populate(
+                0x11111u64 << 4 * (r - 4),
+                5,
+                &mut hand_value,
+                rc,
+                rc,
+                rc,
+                r,
+                false,
+            );
         }
 
         // println!("ADDING flush_tableES");
@@ -190,7 +210,16 @@ impl Evaluator {
             for r2 in 0..rc {
                 if r2 != r1 {
                     // r1's full of r2
-                    self.populate((3u64 << 4 * r1) + (2u64 << 4 * r2), 5, &mut hand_value, rc, r2, r1, rc, false);
+                    self.populate(
+                        (3u64 << 4 * r1) + (2u64 << 4 * r2),
+                        5,
+                        &mut hand_value,
+                        rc,
+                        r2,
+                        r1,
+                        rc,
+                        false,
+                    );
                 }
             }
         }
@@ -206,14 +235,30 @@ impl Evaluator {
         // A-5
         self.populate(0x1000000001111u64, 5, &mut hand_value, rc, 0, 0, 3, true);
         for r in 4..rc {
-            self.populate(0x11111u64 << 4 * (r - 4), 5, &mut hand_value, rc, 0, 0, r, true);
+            self.populate(
+                0x11111u64 << 4 * (r - 4),
+                5,
+                &mut hand_value,
+                rc,
+                0,
+                0,
+                r,
+                true,
+            );
         }
     }
 
-    fn populate(&mut self, ranks: u64, n_cards: u8, hand_value: &mut u16,
-                end_rank: u8, max_pair: u8, max_trips: u8,
-                max_straight: u8, flush: bool) {
-
+    fn populate(
+        &mut self,
+        ranks: u64,
+        n_cards: u8,
+        hand_value: &mut u16,
+        end_rank: u8,
+        max_pair: u8,
+        max_trips: u8,
+        max_straight: u8,
+        flush: bool,
+    ) {
         // only increment counter for 0-5 card combos
         if (n_cards <= 5) && (n_cards >= MIN_CARDS) {
             *hand_value += 1;
@@ -231,11 +276,9 @@ impl Evaluator {
                 } else {
                     // Can't call perf_hash again
                     // it will generate second borrow
-                    self.rank_table[
-                        (Wrapping(key as u32)
-                         + Wrapping(self.perf_hash_offsets[key >> PERF_HASH_ROW_SHIFT])).0 as usize
-                    ] = *hand_value;
-
+                    self.rank_table[(Wrapping(key as u32)
+                        + Wrapping(self.perf_hash_offsets[key >> PERF_HASH_ROW_SHIFT]))
+                    .0 as usize] = *hand_value;
                 }
             }
 
@@ -264,16 +307,25 @@ impl Evaluator {
                 continue;
             }
 
-            self.populate(new_ranks, n_cards + 1, hand_value,
-                    r + 1, max_pair, max_trips,
-                    max_straight, flush);
+            self.populate(
+                new_ranks,
+                n_cards + 1,
+                hand_value,
+                r + 1,
+                max_pair,
+                max_trips,
+                max_straight,
+                flush,
+            );
         }
         return;
     }
 
     // return index of highest straight card or 0 when no straight
     fn get_biggest_straight(ranks: u64) -> u8 {
-        let rank_mask: u64 = (0x1111111111111 & ranks) | (0x2222222222222 & ranks) >> 1 | (0x4444444444444 & ranks) >> 2;
+        let rank_mask: u64 = (0x1111111111111 & ranks)
+            | (0x2222222222222 & ranks) >> 1
+            | (0x4444444444444 & ranks) >> 2;
         for i in (0..9).rev() {
             if ((rank_mask >> 4 * i) & 0x11111u64) == 0x11111u64 {
                 return i + 4;
@@ -286,7 +338,6 @@ impl Evaluator {
     }
 
     fn recalculate_perfect_hash_offsets(&mut self) {
-
         let mut rows: Vec<(usize, Vec<usize>)> = Vec::new();
         for i in 0..(MAX_KEY + 1) {
             if self.orig_lookup[i] != 0 {
@@ -322,7 +373,8 @@ impl Evaluator {
                 offset += 1;
             }
 
-            self.perf_hash_offsets[rows[i].0] = (offset as i32 - (rows[i].0 << PERF_HASH_ROW_SHIFT) as i32) as u32;
+            self.perf_hash_offsets[rows[i].0] =
+                (offset as i32 - (rows[i].0 << PERF_HASH_ROW_SHIFT) as i32) as u32;
 
             for key in &rows[i].1 {
                 let new_idx = (*key & PERF_HASH_COLUMN_MASK) + offset;
@@ -335,7 +387,8 @@ impl Evaluator {
         let fullpath = Path::new(&env::var("OUT_DIR").unwrap()).join(HASH_OFFSETS_FILENAME);
         let mut file = File::create(fullpath).unwrap();
         file.pack(rows.len() as u32).unwrap();
-        file.pack_all(&self.perf_hash_offsets[0..rows.len()]).unwrap();
+        file.pack_all(&self.perf_hash_offsets[0..rows.len()])
+            .unwrap();
 
         // free memory
         self.rank_table.resize(max_idx + 1, 0);
@@ -350,21 +403,15 @@ mod tests {
 
     #[bench]
     fn bench_lookup(b: &mut Bencher) {
-        let hand = hand::Hand::empty()
-            + hand::CARDS[0]
-            + hand::CARDS[1];
+        let hand = hand::Hand::empty() + hand::CARDS[0] + hand::CARDS[1];
         b.iter(|| evaluate(&hand));
     }
 
     #[test]
     fn test_2222() {
-        let hand = hand::Hand::empty()
-            + hand::CARDS[0]
-            + hand::CARDS[1]
-            + hand::CARDS[2]
-            + hand::CARDS[3];
+        let hand =
+            hand::Hand::empty() + hand::CARDS[0] + hand::CARDS[1] + hand::CARDS[2] + hand::CARDS[3];
         assert_eq!(8, evaluate(&hand) >> HAND_CATEGORY_SHIFT);
         assert_eq!(32769, evaluate(&hand));
     }
 }
-
