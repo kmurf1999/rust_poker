@@ -23,8 +23,8 @@ impl Combo {
     /// # Example
     /// ```
     /// // prints '2s2h'
-    /// use rust_poker::hand_range::HoleCards;
-    /// let hand = HoleCards(0, 1);
+    /// use rust_poker::hand_range::Combo;
+    /// let hand = Combo(0, 1, 100);
     /// println!("{}", hand.to_string());
     /// ```
     pub fn to_string(&self) -> String {
