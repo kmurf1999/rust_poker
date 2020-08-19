@@ -92,6 +92,9 @@ impl HandRange {
 
     /// Create a vector of Handrange from a vector of strings
     ///
+    /// Supports weighting between 0-100 using the @0-100 after the combo.  If no weight is
+    /// specified, weights will default to 100.
+    ///
     /// # Arguments
     ///
     /// * `arr` - A vector of equilab-like range strings
@@ -100,7 +103,7 @@ impl HandRange {
     ///
     /// ```
     /// use rust_poker::hand_range::HandRange;
-    /// let ranges = HandRange::from_strings(["22+".to_string(), "AKs".to_string()].to_vec());
+    /// let ranges = HandRange::from_strings(["22+,QQ@50".to_string(), "AKs".to_string()].to_vec());
     /// ```
     pub fn from_strings(arr: Vec<String>) -> Vec<Self> {
         return arr

@@ -349,10 +349,10 @@ mod tests {
     #[bench]
     fn bench_random_random(b: &mut Bencher) {
         // best score with these params
-        // 2,900,681 ns/iter
+        // 3,900,681 ns/iter
         const ERROR: f64 = 0.01;
         const THREADS: u8 = 4;
-        const SIM_COUNT: u64 = 10000;
+        const SIM_COUNT: u64 = 30000;
         let ranges = HandRange::from_strings(["random".to_string(), "random".to_string()].to_vec());
         let board_mask = get_card_mask("");
         b.iter(|| {
