@@ -14,7 +14,7 @@ Fast range vs. range equity calculation for poker written in rust
 ### Usage
 
 ```rust
-use rust_poker::evaluator::{Hand, CARDS, evaluate};
+use rust_poker::hand_evaluator::{Hand, CARDS, evaluate};
 // cards are indexed 0->51 where index is 4 * rank + suit
 let hand = Hand::empty() + CARDS[0] + CARDS[1];
 let score = evaluate(&hand);
@@ -29,8 +29,8 @@ let score = evaluate(&hand);
 ```rust
 use rust_poker::hand_range::{HandRange, get_card_mask};
 use rust_poker::equity_calculator::calc_equity;
-let ranges = HandRange::from_str_arr(["AK,22+", "random"].to_vec());
-let public_cards = get_card_mask("2h3d4c");
+let ranges = HandRange::from_strings(["AK,22+".to_string(), "random".to_string()].to_vec());
+let public_cards = get_card_mask("2h3d4c".to_string());
 let n_games = 10000;
 let n_threads = 4;
 let equities = calc_equity(&ranges, public_cards, n_threads, n_games);
