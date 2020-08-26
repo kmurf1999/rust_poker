@@ -7,9 +7,13 @@ description = "Rust poker library"
 license = "MIT"
 edition = "2018"
 
+[workspace]
+members = ["gen_eval_table"]
+
 [build-dependencies]
 bindgen = "0.53.1"
 cmake = "0.1"
+gen_eval_table = { path = "./gen_eval_table" }
 
 [dependencies]
 lazy_static = "1.4.0"

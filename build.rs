@@ -1,10 +1,14 @@
 extern crate bindgen;
+extern crate gen_eval_table;
 
+use cmake::Config;
 use std::env;
 use std::path::PathBuf;
-use cmake::Config;
 
 fn main() {
+    // copy out dir variable
+    println!("cargo:rustc-env=OUT_DIR={}", env::var("OUT_DIR").unwrap());
+
     // build static library
     let dst = Config::new("hand_indexer").build();
 
@@ -31,4 +35,7 @@ fn main() {
     bindings
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write bindings!");
+
+    // generate hand eval table
+    gen_eval_table::gen_eval_table();
 }

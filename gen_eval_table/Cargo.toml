@@ -1,0 +1,9 @@
+[package]
+name = "gen_eval_table"
+version = "0.1.0"
+authors = ["ruffers9 <kwmurph2@asu.edu>"]
+edition = "2018"
+
+[dependencies]
+bytepack = "0.4.1"
+
