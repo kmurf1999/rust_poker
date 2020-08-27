@@ -76,7 +76,7 @@ impl HandIndexer {
     /// let cards = [0u8, 1, 5, 6, 7];
     /// let index = flop_indexer.get_index(&cards);
     /// ```
-    pub fn get_index(&self, cards: &[u8]) -> Self {
+    pub fn get_index(&self, cards: &[u8]) -> HandIndex {
         unsafe {
             return hand_index_last(self, cards.as_ptr());
         }
