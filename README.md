@@ -1,15 +1,16 @@
 # RustPoker
 
 [![Build Status](https://travis-ci.org/kmurf1999/rust_poker.svg?branch=master)](https://travis-ci.org/kmurf1999/rust_poker)
-[![docs.rs](https://docs.rs/rust_poker/badge.svg?version=0.1.3)](https://docs.rs/rust_poker)
+[![docs.rs](https://docs.rs/rust_poker/badge.svg)](https://docs.rs/rust_poker)
 
 Fast range vs. range equity calculation for poker written in rust
 
- - [Crates.io](https://crates.io/crates/rust_poker)
+- [Crates.io](https://crates.io/crates/rust_poker)
 
 ## Hand Evaluator
- - Evaluates hands with any number of cards from 0 to 7
- - Higher score is better
+
+- Evaluates hands with any number of cards from 0 to 7
+- Higher score is better
 
 ### Usage
 
@@ -21,8 +22,9 @@ let score = evaluate(&hand);
 ```
 
 ## Equity Calculator
- - Runs a multithreaded monte-carlo simulation to calculate range vs range equities
- - Supports up to 6 players
+
+- Runs a multithreaded monte-carlo simulation to calculate range vs range equities
+- Supports up to 6 players
 
 ### Usage
 
