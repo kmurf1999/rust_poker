@@ -22,7 +22,7 @@ members = [
 indexer = ["hand_indexer"]
 
 [build-dependencies]
-gen_eval_table = { path = "gen_eval_table" }
+gen_eval_table = { path = "gen_eval_table", version = "0.1.0" }
 
 [dependencies]
 lazy_static = "1.4.0"
