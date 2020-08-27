@@ -11,7 +11,6 @@ const PERF_HASH_FILENAME: &str = "h_eval_offsets.dat";
 const RANK_TABLE_FILENAME: &str = "h_eval_rank_table.dat";
 const FLUSH_TABLE_FILENAME: &str = "h_eval_flush_table.dat";
 
-const HAND_CATEGORY_SHIFT: u8 = 12;
 const PERF_HASH_ROW_SHIFT: usize = 12;
 
 fn read_vector_from_file<Precision: bytepack::Packed>(
@@ -27,7 +26,7 @@ fn read_vector_from_file<Precision: bytepack::Packed>(
 
 /// Evaluates a single hand and returns score
 pub fn evaluate(hand: &hand::Hand) -> u16 {
-    return LOOKUP_TABLE.evaluate(hand);
+    LOOKUP_TABLE.evaluate(hand)
 }
 
 lazy_static! {
@@ -56,16 +55,16 @@ impl Evaluator {
 
     pub fn evaluate(&self, hand: &hand::Hand) -> u16 {
         if hand.has_flush() {
-            return self.flush_table[hand.get_flush_key()];
+            self.flush_table[hand.get_flush_key()]
         } else {
-            return self.rank_table[self.perf_hash(hand.get_rank_key())];
+            self.rank_table[self.perf_hash(hand.get_rank_key())]
         }
     }
 
     fn perf_hash(&self, key: usize) -> usize {
         // works because of overflow
-        return (Wrapping(key as u32) + Wrapping(self.perf_hash_offsets[key >> PERF_HASH_ROW_SHIFT]))
-            .0 as usize;
+        (Wrapping(key as u32) + Wrapping(self.perf_hash_offsets[key >> PERF_HASH_ROW_SHIFT])).0
+            as usize
     }
 }
 
@@ -73,6 +72,8 @@ impl Evaluator {
 mod tests {
     use super::*;
     use test::Bencher;
+
+    const HAND_CATEGORY_SHIFT: u8 = 12;
 
     #[bench]
     fn bench_lookup(b: &mut Bencher) {

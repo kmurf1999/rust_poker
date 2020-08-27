@@ -30,16 +30,17 @@
 
 #[macro_use]
 extern crate lazy_static;
-extern crate test;
-extern crate rand;
 extern crate crossbeam;
+extern crate rand;
+extern crate test;
 
-mod hand_indexer;
+#[cfg(all(feature = "indexer"))]
+extern crate hand_indexer;
+#[cfg(all(feature = "indexer"))]
+pub use hand_indexer::{HandIndex, HandIndexer};
 
-pub use hand_indexer::hand_indexer_s;
-
-pub mod hand_range;
 pub mod constants;
 pub mod hand_evaluator;
+pub mod hand_range;
 
 pub mod equity_calculator;

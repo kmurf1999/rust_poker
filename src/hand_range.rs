@@ -6,6 +6,7 @@
  */
 
 use std::cmp::Ordering;
+use std::fmt;
 use std::iter::FromIterator;
 
 use crate::constants::*;
@@ -17,7 +18,7 @@ use crate::constants::*;
 #[derive(Debug, Clone, Copy)]
 pub struct Combo(pub u8, pub u8, pub u8);
 
-impl Combo {
+impl fmt::Display for Combo {
     /// Writes hole cards to string
     ///
     /// # Example
@@ -27,14 +28,14 @@ impl Combo {
     /// let hand = Combo(0, 1, 100);
     /// println!("{}", hand.to_string());
     /// ```
-    pub fn to_string(&self) -> String {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let chars: Vec<char> = vec![
             RANK_TO_CHAR[usize::from(self.0 >> 2)],
             SUIT_TO_CHAR[usize::from(self.0 & 3)],
             RANK_TO_CHAR[usize::from(self.1 >> 2)],
             SUIT_TO_CHAR[usize::from(self.1 & 3)],
         ];
-        return String::from_iter(chars);
+        write!(f, "{}", String::from_iter(chars))
     }
 }
 
@@ -53,7 +54,7 @@ impl Ord for Combo {
             return (&self.0 & 3).cmp(&(other.0 & 3));
         }
         // compare second suit
-        return (&self.1 & 3).cmp(&(other.1 & 3));
+        (&self.1 & 3).cmp(&(other.1 & 3))
     }
 }
 
@@ -67,7 +68,7 @@ impl PartialEq for Combo {
     fn eq(&self, other: &Self) -> bool {
         let h1: u16 = (u16::from(self.0) << 8) | u16::from(self.1);
         let h2: u16 = (u16::from(other.0) << 8) | u16::from(other.1);
-        return h1 == h2;
+        h1 == h2
     }
 }
 
@@ -106,10 +107,9 @@ impl HandRange {
     /// let ranges = HandRange::from_strings(["22+,QQ@50".to_string(), "AKs".to_string()].to_vec());
     /// ```
     pub fn from_strings(arr: Vec<String>) -> Vec<Self> {
-        return arr
-            .iter()
+        arr.iter()
             .map(|s| HandRange::from_string(s.to_owned()))
-            .collect();
+            .collect()
     }
 
     /// Create a Handrange from a string
@@ -137,7 +137,7 @@ impl HandRange {
             range.remove_duplicates();
         }
 
-        return range;
+        range
     }
 
     fn parse_hand(&mut self, i: &mut usize) -> bool {
@@ -194,7 +194,7 @@ impl HandRange {
             }
         }
 
-        return true;
+        true
     }
 
     fn parse_weight(&self, i: &mut usize, weight: &mut u8) -> bool {
@@ -209,7 +209,7 @@ impl HandRange {
                     *i += 1;
                 }
                 None => {
-                    if number <= 0 || number > 100 {
+                    if number > 100 {
                         *i = backtrack;
                         return false;
                     } else {
@@ -224,9 +224,9 @@ impl HandRange {
     fn parse_char(&mut self, i: &mut usize, c: char) -> bool {
         if self.char_vec[*i] == c {
             *i += 1;
-            return true;
+            true
         } else {
-            return false;
+            false
         }
     }
 
@@ -236,7 +236,7 @@ impl HandRange {
             return false;
         }
         *i += 1;
-        return true;
+        true
     }
 
     fn parse_suit(&mut self, i: &mut usize, suit: &mut u8) -> bool {
@@ -245,7 +245,7 @@ impl HandRange {
             return false;
         }
         *i += 1;
-        return true;
+        true
     }
 
     /**
@@ -327,7 +327,7 @@ impl HandRange {
      */
     fn remove_duplicates(&mut self) {
         // first sort hands
-        self.hands.sort_by(|a, b| a.cmp(b));
+        self.hands.sort();
         // remove duplicates
         self.hands.dedup();
     }
@@ -342,7 +342,7 @@ impl HandRange {
 /// let rank = char_to_rank('a');
 /// ```
 pub fn char_to_rank(c: char) -> u8 {
-    let rank = match c {
+    match c {
         'a' => 12,
         'k' => 11,
         'q' => 10,
@@ -357,8 +357,7 @@ pub fn char_to_rank(c: char) -> u8 {
         '3' => 1,
         '2' => 0,
         _ => u8::MAX,
-    };
-    return rank;
+    }
 }
 
 /// Convert lowercase suit char to u8
@@ -370,14 +369,13 @@ pub fn char_to_rank(c: char) -> u8 {
 /// let rank = char_to_suit('s');
 /// ```
 pub fn char_to_suit(c: char) -> u8 {
-    let suit = match c {
+    match c {
         's' => 0,
         'h' => 1,
         'd' => 2,
         'c' => 3,
         _ => u8::MAX,
-    };
-    return suit;
+    }
 }
 
 /// Converts a string into a 64bit card mask
@@ -410,7 +408,7 @@ pub fn get_card_mask(text: &str) -> u64 {
         let card = (4 * rank) + suit;
         cards |= 1u64 << card;
     }
-    return cards;
+    cards
 }
 
 pub fn mask_to_string(card_mask: u64) -> String {
@@ -423,7 +421,7 @@ pub fn mask_to_string(card_mask: u64) -> String {
             card_str.push(SUIT_TO_CHAR[usize::from(suit)]);
         }
     }
-    return card_str;
+    card_str
 }
 
 #[cfg(test)]

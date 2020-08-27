@@ -17,7 +17,7 @@ const FLUSH_CHECK_MASK32: u32 = 0x8888u32 << (SUITS_SHIFT - 32) as u32;
 #[derive(Debug, Copy, Clone)]
 pub struct Hand {
     key: u64,
-    mask: u64
+    mask: u64,
 }
 
 lazy_static! {
@@ -28,7 +28,7 @@ lazy_static! {
 impl Hand {
     /// Create hand from hole cards
     pub fn from_hole_cards(c1: u8, c2: u8) -> Hand {
-        return CARDS[usize::from(c1)] + CARDS[usize::from(c2)];
+        CARDS[usize::from(c1)] + CARDS[usize::from(c2)]
     }
     /// Return first 64 bits
     pub const fn get_key(self) -> u64 {
@@ -43,11 +43,11 @@ impl Hand {
         // get last 32 bits
         let key = self.key as u32;
         // cast to usize
-        return key as usize;
+        key as usize
     }
     /// Return counter bits
     pub const fn get_counters(self) -> u32 {
-        return (self.key >> 32) as u32;
+        (self.key >> 32) as u32
     }
     /// Get flush key of card for lookup table
     ///
@@ -60,18 +60,18 @@ impl Hand {
             let flush_check_bits = self.get_counters() & FLUSH_CHECK_MASK32;
             let shift = flush_check_bits.leading_zeros() << 2;
             // return mask for suit
-            let key =  (self.mask >> shift) as u16;
-            return usize::from(key);
+            let key = (self.mask >> shift) as u16;
+            usize::from(key)
         } else {
-            return 0;
+            0
         }
     }
     pub fn has_flush(self) -> bool {
-        return (self.get_key() & FLUSH_CHECK_MASK64) != 0;
+        (self.get_key() & FLUSH_CHECK_MASK64) != 0
     }
     // Return number of cards in hand
     pub fn count(self) -> u32 {
-        return (self.get_counters() >> (CARD_COUNT_SHIFT - 32)) & 0xf;
+        (self.get_counters() >> (CARD_COUNT_SHIFT - 32)) & 0xf
     }
     // contruct the empty hand
     // needed for evaluation
@@ -88,14 +88,14 @@ impl Hand {
     pub fn empty() -> Hand {
         Hand {
             key: 0x3333u64 << SUITS_SHIFT,
-            mask: 0
+            mask: 0,
         }
     }
 
     /// Get the number of cards for a suit
     pub fn suit_count(self, suit: u8) -> i32 {
         let shift = 4 * suit + (SUITS_SHIFT - 32);
-        return (((self.get_counters() >> shift) & 0xf) as i32) - 3;
+        (((self.get_counters() >> shift) & 0xf) as i32) - 3
     }
 }
 
@@ -105,7 +105,7 @@ impl Add for Hand {
     fn add(self, other: Self) -> Self::Output {
         Self {
             key: self.key + other.key,
-            mask: self.mask | other.mask
+            mask: self.mask | other.mask,
         }
     }
 }
@@ -119,13 +119,11 @@ impl AddAssign for Hand {
 
 impl PartialEq for Hand {
     fn eq(&self, other: &Self) -> bool {
-        return (self.get_mask() == other.get_mask())
-            && (self.get_key() == other.get_key());
+        (self.get_mask() == other.get_mask()) && (self.get_key() == other.get_key())
     }
 }
 
 impl Eq for Hand {}
-
 
 fn init_card_constants() -> [Hand; 52] {
     let mut hands: [Hand; 52] = [Hand::empty(); 52];
@@ -144,14 +142,13 @@ fn init_card_constants() -> [Hand; 52] {
 
         hands[usize::from(c)] = Hand {
             key: x + y + z,
-            mask: mask
+            mask,
         };
         // println!("{:#066b}", x + y + z);
     }
 
-    return hands;
+    hands
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -163,7 +160,7 @@ mod tests {
         let rank: usize = 0; // 2
         let suit: usize = 0; // spade
         let h = CARDS[4 * rank + suit];
-        assert_eq!(h.get_mask(), 1u64 << (3 - suit) * 16 + rank);
+        assert_eq!(h.get_mask(), 1u64 << ((3 - suit) * 16 + rank));
         assert_eq!(h.count(), 1); // one card
         assert_eq!(h.has_flush(), false);
     }
@@ -185,32 +182,26 @@ mod tests {
 
     #[test]
     fn test_flush_key() {
-        let h_flush = Hand::empty()
-            + CARDS[0] + CARDS[4] + CARDS[8] + CARDS[12] + CARDS[16];
+        let h_flush = Hand::empty() + CARDS[0] + CARDS[4] + CARDS[8] + CARDS[12] + CARDS[16];
         assert_eq!(h_flush.get_flush_key(), 0b11111);
 
-        let h_noflush = Hand::empty()
-            + CARDS[0] + CARDS[4] + CARDS[8] + CARDS[12];
+        let h_noflush = Hand::empty() + CARDS[0] + CARDS[4] + CARDS[8] + CARDS[12];
         assert_eq!(h_noflush.get_flush_key(), 0);
     }
 
     #[test]
     fn test_has_flush() {
-        let h_flush = Hand::empty()
-            + CARDS[0] + CARDS[8] + CARDS[12] + CARDS[16] + CARDS[20];
+        let h_flush = Hand::empty() + CARDS[0] + CARDS[8] + CARDS[12] + CARDS[16] + CARDS[20];
         assert_eq!(h_flush.has_flush(), true);
-        let h_noflush = Hand::empty()
-            + CARDS[0] + CARDS[8] + CARDS[12] + CARDS[16] + CARDS[21];
+        let h_noflush = Hand::empty() + CARDS[0] + CARDS[8] + CARDS[12] + CARDS[16] + CARDS[21];
         assert_eq!(h_noflush.has_flush(), false);
     }
 
     #[test]
     fn test_suit_count() {
-        let h_4_spades = Hand::empty()
-            + CARDS[0] + CARDS[8] + CARDS[12] + CARDS[16] + CARDS[21];
+        let h_4_spades = Hand::empty() + CARDS[0] + CARDS[8] + CARDS[12] + CARDS[16] + CARDS[21];
         assert_eq!(h_4_spades.suit_count(0), 4);
-        let h_3_hearts = Hand::empty()
-            + CARDS[1] + CARDS[9] + CARDS[13];
+        let h_3_hearts = Hand::empty() + CARDS[1] + CARDS[9] + CARDS[13];
         assert_eq!(h_3_hearts.suit_count(1), 3);
     }
 }

@@ -36,7 +36,7 @@ const MAX_PLAYERS: usize = 6;
 /// let equities = calc_equity(&ranges, board_mask, 4, 1000);
 /// ```
 pub fn calc_equity(
-    hand_ranges: &Vec<HandRange>,
+    hand_ranges: &[HandRange],
     board_mask: u64,
     n_threads: u8,
     sim_count: u64,
@@ -88,7 +88,7 @@ pub fn calc_equity(
     for i in 0..sim.n_players {
         equities[i] /= equity_sum;
     }
-    return equities;
+    equities
 }
 
 /// structure to store results of a single thread
@@ -138,7 +138,7 @@ struct Simulator {
 }
 
 impl Simulator {
-    fn new(hand_ranges: &Vec<HandRange>, board_mask: u64, sim_count: u64) -> Simulator {
+    fn new(hand_ranges: &[HandRange], board_mask: u64, sim_count: u64) -> Simulator {
         let mut hand_ranges = hand_ranges.to_owned();
         let n_players = hand_ranges.len();
         remove_invalid_combos(&mut hand_ranges, board_mask);
@@ -146,12 +146,12 @@ impl Simulator {
         Simulator {
             hand_ranges,
             // combined_ranges: CombinedRange::from_ranges(&hand_ranges),
-            board_mask: board_mask,
+            board_mask,
             fixed_board: get_board_from_bit_mask(board_mask),
             n_players,
             stopped: AtomicCell::new(false),
             results: RwLock::new(Results::init(n_players)),
-            sim_count: sim_count,
+            sim_count,
         }
     }
 
@@ -200,7 +200,7 @@ impl Simulator {
                 // update results
                 self.update_results(&batch, false);
                 batch = ResultsBatch::init(self.n_players);
-                if self.stopped.load() == true {
+                if self.stopped.load() {
                     break;
                 }
             }
@@ -240,7 +240,7 @@ impl Simulator {
         &self,
         results: &mut ResultsBatch,
         board: &Hand,
-        player_hand_indexes: &Vec<usize>,
+        player_hand_indexes: &[usize],
     ) {
         // evaulate hands
         let mut winner_mask: u8 = 0;
@@ -308,7 +308,7 @@ pub fn get_board_from_bit_mask(mask: u64) -> Hand {
             board += CARDS[c];
         }
     }
-    return board;
+    board
 }
 
 // remove combos from hand ranges that conflict with board

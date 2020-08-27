@@ -8,15 +8,21 @@ license = "MIT"
 edition = "2018"
 
 [workspace]
-members = ["gen_eval_table"]
+members = [
+    "gen_eval_table",
+    "hand_indexer"
+]
+
+[features]
+# Option: enable hand_indexer
+indexer = ["hand_indexer"]
 
 [build-dependencies]
-bindgen = "0.53.1"
-cmake = "0.1"
-gen_eval_table = { path = "./gen_eval_table" }
+gen_eval_table = { path = "gen_eval_table" }
 
 [dependencies]
 lazy_static = "1.4.0"
 bytepack = "0.4.1"
 rand = { version = "0.7", features = ["small_rng"] }
 crossbeam = "0.7.3"
+hand_indexer = { path = "hand_indexer", optional = true }
