@@ -57,7 +57,11 @@ impl HandIndexer {
         return hand_indexer;
     }
 
-    /// Return number of indices in a round
+    /// Return number of isomorphic hands in a round
+    ///
+    /// # Arguments
+    ///
+    /// * `round` - round to get hand for (0 -> preflop, 1 -> flop)
     pub fn size(&self, round: u32) -> u64 {
         return unsafe { hand_indexer_size(self, round.into()) };
     }
