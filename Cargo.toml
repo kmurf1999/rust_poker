@@ -29,7 +29,7 @@ lazy_static = "1.4.0"
 bytepack = "0.4.1"
 rand = { version = "0.7", features = ["small_rng"] }
 crossbeam = "0.7.3"
-hand_indexer = { path = "hand_indexer", optional = true }
+hand_indexer = { path = "hand_indexer", optional = true, version = "0.1.0" }
 
 [package.metadata.docs.rs]
 all-features = true
