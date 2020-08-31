@@ -141,13 +141,15 @@ impl Simulator {
     fn new(hand_ranges: &[HandRange], board_mask: u64, sim_count: u64) -> Simulator {
         let mut hand_ranges = hand_ranges.to_owned();
         let n_players = hand_ranges.len();
-        remove_invalid_combos(&mut hand_ranges, board_mask);
+        hand_ranges
+            .iter_mut()
+            .for_each(|h| h.remove_conflicting_combos(board_mask));
 
         Simulator {
             hand_ranges,
             // combined_ranges: CombinedRange::from_ranges(&hand_ranges),
             board_mask,
-            fixed_board: get_board_from_bit_mask(board_mask),
+            fixed_board: Hand::from_bit_mask(board_mask),
             n_players,
             stopped: AtomicCell::new(false),
             results: RwLock::new(Results::init(n_players)),
@@ -300,39 +302,11 @@ fn randomize_board<R: Rng>(
     }
 }
 
-// construct a Hand object from board mask
-pub fn get_board_from_bit_mask(mask: u64) -> Hand {
-    let mut board = Hand::empty();
-    for c in 0..usize::from(CARD_COUNT) {
-        if (mask & (1u64 << c)) != 0 {
-            board += CARDS[c];
-        }
-    }
-    board
-}
-
-// remove combos from hand ranges that conflict with board
-pub fn remove_invalid_combos(ranges: &mut Vec<HandRange>, board_mask: u64) {
-    for r in ranges {
-        r.hands
-            .retain(|x| (((1u64 << x.0) | (1u64 << x.1)) & board_mask) == 0);
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::hand_range::{get_card_mask, HandRange};
     use test::Bencher;
-
-    #[test]
-    fn test_remove_invalid_combos() {
-        let mut ranges = HandRange::from_strings(["AA".to_string(), "random".to_string()].to_vec());
-        let board_mask = get_card_mask("Ah2s3c");
-        assert_eq!(ranges[0].hands.len(), 6);
-        remove_invalid_combos(&mut ranges, board_mask);
-        assert_eq!(ranges[0].hands.len(), 3);
-    }
 
     #[test]
     fn test_weighted_ranges() {
@@ -360,19 +334,5 @@ mod tests {
             assert!(eq[0] > 0.5 - ERROR);
             assert!(eq[0] < 0.5 + ERROR);
         });
-    }
-
-    #[test]
-    fn test_get_board_from_bit_mask() {
-        // 4-bit rank groups
-        let board_mask = get_card_mask("2s2h2d");
-        // 16 bit suit groups
-        let board = get_board_from_bit_mask(board_mask);
-
-        assert_eq!(
-            0b1000000000000000100000000000000010000000000000000,
-            board.get_mask()
-        );
-        assert_eq!(0b111, board_mask);
     }
 }

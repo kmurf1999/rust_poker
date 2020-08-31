@@ -71,9 +71,8 @@ impl Evaluator {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::constants::HAND_CATEGORY_SHIFT;
     use test::Bencher;
-
-    const HAND_CATEGORY_SHIFT: u8 = 12;
 
     #[bench]
     fn bench_lookup(b: &mut Bencher) {

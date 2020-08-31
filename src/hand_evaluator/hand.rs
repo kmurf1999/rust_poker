@@ -30,6 +30,18 @@ impl Hand {
     pub fn from_hole_cards(c1: u8, c2: u8) -> Hand {
         CARDS[usize::from(c1)] + CARDS[usize::from(c2)]
     }
+
+    /// construct a Hand object from board mask
+    pub fn from_bit_mask(mask: u64) -> Hand {
+        let mut board = Hand::empty();
+        for c in 0..usize::from(CARD_COUNT) {
+            if (mask & (1u64 << c)) != 0 {
+                board += CARDS[c];
+            }
+        }
+        board
+    }
+
     /// Return first 64 bits
     pub const fn get_key(self) -> u64 {
         self.key

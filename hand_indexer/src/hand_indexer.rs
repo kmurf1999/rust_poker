@@ -42,8 +42,8 @@ impl HandIndexer {
     /// # Example
     ///
     /// ```
-    /// use rust_poker::hand_indexer_s;
-    /// let flop_indexer = hand_indexer_s::init(2, [2, 3].to_vec());
+    /// use hand_indexer::HandIndexer;
+    /// let flop_indexer = HandIndexer::init(2, [2, 3].to_vec());
     /// ```
     pub fn init(rounds: u32, cards_per_round: Vec<u8>) -> Self {
         let mut hand_indexer = HandIndexer::new();
@@ -70,8 +70,8 @@ impl HandIndexer {
     ///
     /// # Example
     /// ```
-    /// use rust_poker::hand_indexer_s;
-    /// let flop_indexer = hand_indexer_s::init(2, [2, 3].to_vec());
+    /// use hand_indexer::HandIndexer;
+    /// let flop_indexer = HandIndexer::init(2, [2, 3].to_vec());
     /// // first two cards are hole cards
     /// let cards = [0u8, 1, 5, 6, 7];
     /// let index = flop_indexer.get_index(&cards);
@@ -92,8 +92,8 @@ impl HandIndexer {
     /// # Example
     ///
     /// ```
-    /// use rust_poker::hand_indexer_s;
-    /// let flop_indexer = hand_indexer_s::init(2, [2, 3].to_vec());
+    /// use hand_indexer::HandIndexer;
+    /// let flop_indexer = HandIndexer::init(2, [2, 3].to_vec());
     /// let mut cards = [0u8; 5];
     /// let hand_index = 400;
     /// let round = 1;
@@ -103,5 +103,18 @@ impl HandIndexer {
         unsafe {
             hand_unindex(self, round.into(), index, cards.as_mut_ptr());
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_index_round_size() {
+        let preflop_indexer = HandIndexer::init(1, [2].to_vec());
+        assert_eq!(preflop_indexer.size(0), 169);
+        let flop_indexer = HandIndexer::init(2, [2, 3].to_vec());
+        assert_eq!(flop_indexer.size(0), 169);
     }
 }

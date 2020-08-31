@@ -112,6 +112,12 @@ impl HandRange {
             .collect()
     }
 
+    /// remove combos that conflict with board
+    pub fn remove_conflicting_combos(&mut self, board_mask: u64) {
+        self.hands
+            .retain(|x| (((1u64 << x.0) | (1u64 << x.1)) & board_mask) == 0);
+    }
+
     /// Create a Handrange from a string
     ///
     /// # Arguments
@@ -411,6 +417,7 @@ pub fn get_card_mask(text: &str) -> u64 {
     cards
 }
 
+/// Converts 64 bit card mask to string representation
 pub fn mask_to_string(card_mask: u64) -> String {
     let mut card_str = String::new();
     for i in 0..CARD_COUNT {

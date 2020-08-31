@@ -1,7 +1,7 @@
 #![feature(test)]
 
 /// # Rust Poker
-/// A poker library
+/// A texas holdem poker library
 ///
 /// Currently supports
 ///  - monte carlo range vs. range equity calculations
@@ -32,6 +32,7 @@
 extern crate lazy_static;
 extern crate crossbeam;
 extern crate rand;
+extern crate serde_json;
 extern crate test;
 
 #[cfg(all(feature = "indexer"))]
@@ -42,5 +43,6 @@ pub use hand_indexer::{HandIndex, HandIndexer};
 pub mod constants;
 pub mod hand_evaluator;
 pub mod hand_range;
+pub mod range_filter;
 
 pub mod equity_calculator;
