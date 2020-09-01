@@ -19,6 +19,7 @@ use rust_poker::hand_evaluator::{Hand, CARDS, evaluate};
 // cards are indexed 0->51 where index is 4 * rank + suit
 let hand = Hand::empty() + CARDS[0] + CARDS[1];
 let score = evaluate(&hand);
+println!("score: {}", score);
 ```
 
 ## Equity Calculator
@@ -36,6 +37,7 @@ let public_cards = get_card_mask("2h3d4c".to_string());
 let n_games = 10000;
 let n_threads = 4;
 let equities = calc_equity(&ranges, public_cards, n_threads, n_games);
+println!("player 1 equity: {}", equities[0]);
 ```
 
 # Credit

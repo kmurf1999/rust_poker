@@ -1,8 +1,9 @@
 use crate::constants::HAND_CATEGORY_SHIFT;
 use crate::hand_evaluator::{evaluate, Hand};
 use crate::hand_range::{Combo, HandRange};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum MadeHandCategories {
     QuadsOrBetter,
     FullHouse,
@@ -37,7 +38,7 @@ impl MadeHandCategories {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum DrawHandCategories {
     TwoCardFlushDraw,
     NutFlushDraw,
@@ -61,13 +62,29 @@ impl DrawHandCategories {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RangeFilter {
-    made_hands: Vec<MadeHandCategories>,
-    draw_hands: Vec<DrawHandCategories>,
+    pub made_hands: Vec<MadeHandCategories>,
+    pub draw_hands: Vec<DrawHandCategories>,
+}
+
+impl HandRange {
+    pub fn apply_filter(&mut self, board: u64, filter: &RangeFilter) {
+        self.remove_conflicting_combos(board);
+        self.hands.retain(|combo| {
+            filter
+                .made_hands
+                .contains(&get_made_hand_category(&combo, board))
+                || filter
+                    .draw_hands
+                    .contains(&get_draw_hand_category(&combo, board))
+        });
+    }
 }
 
 /// Contains tables representing how a hand range interacts with a board
 /// Breaks hand range combo array into two tables of combos with each index representing a hand class
+#[derive(Serialize, Deserialize, Debug)]
 pub struct HandCategoryRange {
     board: u64,
     made_hand_table: Vec<Vec<String>>,
@@ -208,5 +225,17 @@ mod tests {
         let tables = HandCategoryRange::from_range_and_board(&mut hand_range, board);
         assert_eq!(9, tables.made_hand_table[4].len()); // 9 trips
         assert_eq!(60, tables.made_hand_table[6].len()); // 60 pairs
+    }
+
+    #[test]
+    fn test_apply_filter() {
+        let mut hand_range = HandRange::from_string("22+".to_string());
+        let board = get_card_mask("AsTh4c");
+        let filter = RangeFilter {
+            made_hands: vec![MadeHandCategories::ThreeOfAKind],
+            draw_hands: vec![],
+        };
+        hand_range.apply_filter(board, &filter);
+        assert_eq!(9, hand_range.hands.len());
     }
 }

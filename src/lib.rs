@@ -33,6 +33,7 @@ extern crate lazy_static;
 extern crate crossbeam;
 extern crate rand;
 extern crate serde_json;
+extern crate serde;
 extern crate test;
 
 #[cfg(all(feature = "indexer"))]
