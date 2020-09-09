@@ -2,6 +2,9 @@
 
 [![Build Status](https://travis-ci.org/kmurf1999/rust_poker.svg?branch=master)](https://travis-ci.org/kmurf1999/rust_poker)
 [![docs.rs](https://docs.rs/rust_poker/badge.svg)](https://docs.rs/rust_poker)
+[![crates.io](https://img.shields.io/crates/v/rust_poker.svg)](https://crates.io/crates/rust_poker)
+
+- [Crates.io](https://crates.io/crates/rust_poker)
 
 A poker library written in rust.
 
@@ -9,7 +12,6 @@ A poker library written in rust.
  - Fast hand evaluation
  - Efficient hand indexing
 
-- [Crates.io](https://crates.io/crates/rust_poker)
 
 ## Installation
 
