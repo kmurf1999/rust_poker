@@ -4,8 +4,6 @@
 [![docs.rs](https://docs.rs/rust_poker/badge.svg)](https://docs.rs/rust_poker)
 [![crates.io](https://img.shields.io/crates/v/rust_poker.svg)](https://crates.io/crates/rust_poker)
 
-- [Crates.io](https://crates.io/crates/rust_poker)
-
 A poker library written in rust.
 
  - Multithreaded range vs range equity calculation
