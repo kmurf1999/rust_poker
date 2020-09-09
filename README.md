@@ -7,6 +7,17 @@ Fast range vs. range equity calculation for poker written in rust
 
 - [Crates.io](https://crates.io/crates/rust_poker)
 
+## Installation
+
+Add this to your `Cargo.toml`:
+
+```
+[dependencies]
+rust_poker = "0.1.7"
+```
+
+**Note**: The first build of an application using `rust_poker` will take extra time to generate the hand evaluation table
+
 ## Hand Evaluator
 
 - Evaluates hands with any number of cards from 0 to 7
