@@ -3,7 +3,11 @@
 [![Build Status](https://travis-ci.org/kmurf1999/rust_poker.svg?branch=master)](https://travis-ci.org/kmurf1999/rust_poker)
 [![docs.rs](https://docs.rs/rust_poker/badge.svg)](https://docs.rs/rust_poker)
 
-Fast range vs. range equity calculation for poker written in rust
+A poker library written in rust.
+
+ - Multithreaded range vs range equity calculation
+ - Fast hand evaluation
+ - Efficient hand indexing
 
 - [Crates.io](https://crates.io/crates/rust_poker)
 
