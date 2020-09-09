@@ -10,18 +10,15 @@ Fast range vs. range equity calculation for poker written in rust
 ## Installation
 
 Add this to your `Cargo.toml`:
-
 ```
 [dependencies]
 rust_poker = "0.1.7"
 ```
-
 **Note**: The first build of an application using `rust_poker` will take extra time to generate the hand evaluation table
 
 ## Hand Evaluator
 
-- Evaluates hands with any number of cards from 0 to 7
-- Higher score is better
+Evaluates the strength of any poker hand using up to 7 cards.
 
 ### Usage
 
@@ -35,8 +32,7 @@ println!("score: {}", score);
 
 ## Equity Calculator
 
-- Runs a multithreaded monte-carlo simulation to calculate range vs range equities
-- Supports up to 6 players
+Calculates the range vs range equities for up to 6 different ranges specified by equilab-like range strings.
 
 ### Usage
 
