@@ -2,7 +2,7 @@
 
 extern crate read_write;
 
-use read_write::Packer;
+use read_write::VecIO;
 
 use std::env;
 use std::fs::File;
@@ -36,8 +36,8 @@ pub const RANKS: &[u64; 13] = &[
 /// Table of power of 2 flush ranks
 pub const FLUSH_RANKS: &[u64; 13] = &[1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 
-const OUT_DIR: &str = "CARGO_MANIFEST_DIR";
-
+const OUT_DIR: &str = "OUT_DIR";
+const ASSET_FOLDER: &str = "assets";
 const PERF_HASH_FILENAME: &str = "h_eval_offsets.dat";
 const RANK_TABLE_FILENAME: &str = "h_eval_rank_table.dat";
 const FLUSH_TABLE_FILENAME: &str = "h_eval_flush_table.dat";
@@ -74,10 +74,10 @@ fn get_key(ranks: u64, flush: bool) -> usize {
     key as usize
 }
 
+/// return true if asset file at path exists
 fn hash_file_exists(filename: &str) -> bool {
-    let out_dir =
-        env::var(OUT_DIR).expect("CARGO_TARGET_DIR env var for perfect hash file not set");
-    let fullpath = Path::new(&out_dir).join(filename);
+    let out_dir = env::var(OUT_DIR).expect("CARGO_TARGET_DIR env var for perfect hash file not set");
+    let fullpath = Path::new(&out_dir).join(ASSET_FOLDER).join(filename);
     if File::open(fullpath).is_ok() {
         return true;
     }
@@ -318,16 +318,19 @@ impl EvalTableGenerator {
         self.orig_lookup = Vec::with_capacity(0);
     }
     fn write_files(&mut self) -> Result<()> {
+        // create folder
+        let dir = Path::new(&env::var(OUT_DIR).unwrap()).join(ASSET_FOLDER);
+        std::fs::create_dir(dir.clone())?;
         // write offsets
-        let hash_offsets_path = Path::new(&env::var(OUT_DIR).unwrap()).join(PERF_HASH_FILENAME);
+        let hash_offsets_path = dir.join(PERF_HASH_FILENAME);
         let mut hash_offsets_file = File::create(hash_offsets_path)?;
         hash_offsets_file.write_vec_to_file::<u32>(&self.perf_hash_offsets)?;
         // write rank table
-        let rank_table_path = Path::new(&env::var(OUT_DIR).unwrap()).join(RANK_TABLE_FILENAME);
+        let rank_table_path = dir.join(RANK_TABLE_FILENAME);
         let mut rank_table_file = File::create(rank_table_path)?;
         rank_table_file.write_vec_to_file::<u16>(&self.rank_table)?;
         // write flush table
-        let flush_table_path = Path::new(&env::var(OUT_DIR).unwrap()).join(FLUSH_TABLE_FILENAME);
+        let flush_table_path = dir.join(FLUSH_TABLE_FILENAME);
         let mut flush_table_file = File::create(flush_table_path)?;
         flush_table_file.write_vec_to_file::<u16>(&self.flush_table)?;
 

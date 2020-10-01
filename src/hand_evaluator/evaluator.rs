@@ -1,19 +1,18 @@
 use super::hand;
 
-use read_write::VecAsset;
+use read_write::unpack_vec_from_asset;
 
 use rust_embed::RustEmbed;
 use std::num::Wrapping;
-use std::env;
 use std::fs::File;
-use std::path::Path;
 use std::io::prelude::*;
 use std::slice;
 use std::mem::{transmute, size_of, forget};
 use std::io::{Write, Result, Error, ErrorKind};
 
+/// Must point to same directory as `gen_eval_table`
 #[derive(RustEmbed)]
-#[folder = "$CARGO_MANIFEST_DIR"]
+#[folder = "$OUT_DIR/assets"]
 struct Asset;
 
 /// filename to write and read perf hash offset table
@@ -90,9 +89,9 @@ struct Evaluator {
 impl Evaluator {
     pub fn load() -> Self {
         Self {
-            rank_table: Asset::get(RANK_TABLE_FILENAME).read_vec::<u16>().unwrap(),
-            flush_table: Asset::get(FLUSH_TABLE_FILENAME).read_vec::<u16>().unwrap(),
-            perf_hash_offsets: Asset::get(PERF_HASH_FILENAME).read_vec::<u32>().unwrap(),
+            rank_table: unpack_vec_from_asset::<u16>(Asset::get(RANK_TABLE_FILENAME)).unwrap(),
+            flush_table: unpack_vec_from_asset::<u16>(Asset::get(FLUSH_TABLE_FILENAME)).unwrap(),
+            perf_hash_offsets: unpack_vec_from_asset::<u32>(Asset::get(PERF_HASH_FILENAME)).unwrap()
         }
     }
 

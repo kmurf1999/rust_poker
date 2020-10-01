@@ -7,12 +7,12 @@ use std::io::{Write, Result, Error, ErrorKind};
 
 /// object used to extend functionality of File
 /// used for reading and writing byte vectors to files
-pub trait Packer {
+pub trait VecIO {
     fn write_vec_to_file<T>(&mut self, data: &Vec<T>) -> Result<()>;
     fn read_vec_from_file<T>(&mut self) -> Result<Vec<T>>;
 }
 
-impl Packer for File {
+impl VecIO for File {
     /// Writes a vector of type T to file as bytes
     fn write_vec_to_file<T>(&mut self, data: &Vec<T>) -> Result<()> {
         unsafe {
@@ -53,39 +53,36 @@ impl Packer for File {
     }
 }
 
-pub trait VecAsset {
-    fn read_vec<T>(self) -> Result<Vec<T>>;
-}
-
-/// Used to extend RustEmbed Assets
-/// To read byte vectors
-impl VecAsset for Option<Cow<'static, [u8]>> {
-    fn read_vec<T>(self) -> Result<Vec<T>> {
-        let buffer: Vec<T>;
-        match self {
-            Some(data) => {
-                unsafe {
-                    let mut bytes = data.into_owned();
-                    if bytes.len() % size_of::<T>() != 0 {
-                        forget(bytes);
-                        return Err(Error::new(
-                            ErrorKind::UnexpectedEof,
-                            format!("read_asset() returned a number of bytes which is not a multiple of size ({})", size_of::<T>())
-                        ));
-                    }
-                    let length = bytes.len() / size_of::<T>();
-                    let capacity = bytes.len() / size_of::<T>();
-                    buffer = Vec::from_raw_parts(bytes.as_mut_ptr() as *mut T, length, capacity);
+/// Helper function used to unpack vectors from RustEmbed Assets
+///
+/// This is data that is embeded in the binary
+///
+/// [Rust Embed]: https://crates.io/crates/rust-embed
+pub fn unpack_vec_from_asset<T>(asset: Option<Cow<'static, [u8]>>) -> Result<Vec<T>> {
+    let buffer: Vec<T>;
+    match asset {
+        Some(data) => {
+            unsafe {
+                let mut bytes = data.into_owned();
+                if bytes.len() % size_of::<T>() != 0 {
                     forget(bytes);
+                    return Err(Error::new(
+                        ErrorKind::UnexpectedEof,
+                        format!("read_asset() returned a number of bytes which is not a multiple of size ({})", size_of::<T>())
+                    ));
                 }
-            },
-            None => {
-                return Err(Error::new(
-                    ErrorKind::NotFound,
-                    format!("unable to read asset, file not found")
-                ));
+                let length = bytes.len() / size_of::<T>();
+                let capacity = bytes.len() / size_of::<T>();
+                buffer = Vec::from_raw_parts(bytes.as_mut_ptr() as *mut T, length, capacity);
+                forget(bytes);
             }
+        },
+        None => {
+            return Err(Error::new(
+                ErrorKind::NotFound,
+                format!("unable to read asset, file not found")
+            ));
         }
-        Ok(buffer)
     }
+    Ok(buffer)
 }
