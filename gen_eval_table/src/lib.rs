@@ -1,10 +1,12 @@
 #![allow(clippy::too_many_arguments)]
 
-extern crate bytepack;
+extern crate read_write;
 
-use bytepack::LEPacker;
+use read_write::Packer;
+
 use std::env;
 use std::fs::File;
+use std::io::Result;
 use std::path::Path;
 
 const HAND_CATEGORY_OFFSET: u16 = 0x1000;
@@ -31,9 +33,10 @@ pub const RANKS: &[u64; 13] = &[
     8192, 32769, 69632, 237568, 593920, 1531909, 3563520, 4300819, 4685870, 4690024, 4767972,
     4780561, 4801683,
 ];
-
 /// Table of power of 2 flush ranks
 pub const FLUSH_RANKS: &[u64; 13] = &[1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
+
+const OUT_DIR: &str = "CARGO_MANIFEST_DIR";
 
 const PERF_HASH_FILENAME: &str = "h_eval_offsets.dat";
 const RANK_TABLE_FILENAME: &str = "h_eval_rank_table.dat";
@@ -73,7 +76,7 @@ fn get_key(ranks: u64, flush: bool) -> usize {
 
 fn hash_file_exists(filename: &str) -> bool {
     let out_dir =
-        env::var("OUT_DIR").expect("CARGO_TARGET_DIR env var for perfect hash file not set");
+        env::var(OUT_DIR).expect("CARGO_TARGET_DIR env var for perfect hash file not set");
     let fullpath = Path::new(&out_dir).join(filename);
     if File::open(fullpath).is_ok() {
         return true;
@@ -100,7 +103,7 @@ impl EvalTableGenerator {
     fn start(&mut self) {
         self.generate_tables();
         self.calc_perfect_hash_offsets();
-        self.write_files();
+        self.write_files().unwrap();
     }
     fn generate_tables(&mut self) {
         let rc = RANK_COUNT;
@@ -314,21 +317,21 @@ impl EvalTableGenerator {
         self.rank_table.resize(max_idx + 1, 0);
         self.orig_lookup = Vec::with_capacity(0);
     }
-    fn write_files(&mut self) {
+    fn write_files(&mut self) -> Result<()> {
         // write offsets
-        let hash_offsets_path = Path::new(&env::var("OUT_DIR").unwrap()).join(PERF_HASH_FILENAME);
-        let mut hash_offsets_file = File::create(hash_offsets_path).unwrap();
-        hash_offsets_file
-            .pack_all(&self.perf_hash_offsets[..])
-            .unwrap();
+        let hash_offsets_path = Path::new(&env::var(OUT_DIR).unwrap()).join(PERF_HASH_FILENAME);
+        let mut hash_offsets_file = File::create(hash_offsets_path)?;
+        hash_offsets_file.write_vec_to_file::<u32>(&self.perf_hash_offsets)?;
         // write rank table
-        let rank_table_path = Path::new(&env::var("OUT_DIR").unwrap()).join(RANK_TABLE_FILENAME);
-        let mut rank_table_file = File::create(rank_table_path).unwrap();
-        rank_table_file.pack_all(&self.rank_table[..]).unwrap();
+        let rank_table_path = Path::new(&env::var(OUT_DIR).unwrap()).join(RANK_TABLE_FILENAME);
+        let mut rank_table_file = File::create(rank_table_path)?;
+        rank_table_file.write_vec_to_file::<u16>(&self.rank_table)?;
         // write flush table
-        let flush_table_path = Path::new(&env::var("OUT_DIR").unwrap()).join(FLUSH_TABLE_FILENAME);
-        let mut flush_table_file = File::create(flush_table_path).unwrap();
-        flush_table_file.pack_all(&self.flush_table[..]).unwrap();
+        let flush_table_path = Path::new(&env::var(OUT_DIR).unwrap()).join(FLUSH_TABLE_FILENAME);
+        let mut flush_table_file = File::create(flush_table_path)?;
+        flush_table_file.write_vec_to_file::<u16>(&self.flush_table)?;
+
+        Ok(())
     }
 }
 
@@ -337,9 +340,20 @@ pub fn gen_eval_table() {
         && hash_file_exists(RANK_TABLE_FILENAME)
         && hash_file_exists(FLUSH_TABLE_FILENAME)
     {
+        println!("exists");
         return;
     }
 
     let mut generator = EvalTableGenerator::new();
     generator.start();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_generate_tables() {
+        gen_eval_table();
+    }
 }

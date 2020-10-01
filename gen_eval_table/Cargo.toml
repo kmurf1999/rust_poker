@@ -7,5 +7,4 @@ description = "Generates eval table in build script used by rust_poker"
 license = "MIT"
 
 [dependencies]
-bytepack = "0.4.1"
-
+read_write = { path = "../read_write" }

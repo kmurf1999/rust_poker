@@ -1,4 +1,5 @@
 extern crate bytepack;
+extern crate byteorder;
 
 mod hand;
 mod evaluator;

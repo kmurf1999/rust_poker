@@ -1,10 +1,20 @@
 use super::hand;
 
-use bytepack::LEUnpacker;
+use read_write::VecAsset;
+
+use rust_embed::RustEmbed;
+use std::num::Wrapping;
 use std::env;
 use std::fs::File;
-use std::num::Wrapping;
 use std::path::Path;
+use std::io::prelude::*;
+use std::slice;
+use std::mem::{transmute, size_of, forget};
+use std::io::{Write, Result, Error, ErrorKind};
+
+#[derive(RustEmbed)]
+#[folder = "$CARGO_MANIFEST_DIR"]
+struct Asset;
 
 /// filename to write and read perf hash offset table
 const PERF_HASH_FILENAME: &str = "h_eval_offsets.dat";
@@ -13,15 +23,48 @@ const FLUSH_TABLE_FILENAME: &str = "h_eval_flush_table.dat";
 
 const PERF_HASH_ROW_SHIFT: usize = 12;
 
-fn read_vector_from_file<Precision: bytepack::Packed>(
-    filename: &str,
-) -> Result<Vec<Precision>, std::io::Error> {
-    let out_dir = env::var("OUT_DIR").expect("OUT_DIR env var for perfect hash file not set");
-    let fullpath = Path::new(&out_dir).join(filename);
-    let mut file = File::open(fullpath)?;
-    let mut buffer: Vec<Precision> = Vec::new();
-    file.unpack_to_end(&mut buffer).unwrap();
-    Ok(buffer)
+trait Packer {
+    fn write_vec_to_file<T>(&mut self, data: &Vec<T>) -> Result<()>;
+    fn read_vec_from_file<T>(&mut self) -> Result<Vec<T>>;
+}
+
+impl Packer for File {
+    fn write_vec_to_file<T>(&mut self, data: &Vec<T>) -> Result<()> {
+        unsafe {
+            self.write_all(slice::from_raw_parts(transmute::<*const T, *const u8>(data.as_ptr()), data.len() * size_of::<T>()))?;
+        }
+        Ok(())
+    }
+    fn read_vec_from_file<T>(&mut self) -> Result<Vec<T>> {
+        let mut buffer: Vec<T> = Vec::new();
+        let length = buffer.len();
+        let capacity = buffer.capacity();
+        unsafe {
+            let mut converted = Vec::<u8>::from_raw_parts(buffer.as_mut_ptr() as *mut u8, length * size_of::<T>(), capacity * size_of::<T>());
+            match self.read_to_end(&mut converted) {
+                Ok(size) => {
+                    if converted.len() % size_of::<T>() != 0 {
+                        converted.truncate(length * size_of::<T>());
+                        forget(converted);
+                        return Err(Error::new(
+                            ErrorKind::UnexpectedEof,
+                            format!("read_file() returned a number of bytes ({}) which is not a multiple of size ({})", size, size_of::<T>())
+                        ));
+                    }
+                },
+                Err(e) => {
+                    converted.truncate(length * size_of::<T>());
+                    forget(converted);
+                    return Err(e);
+                }
+            }
+            let new_length = converted.len() / size_of::<T>();
+            let new_capacity = converted.len() / size_of::<T>();
+            buffer = Vec::from_raw_parts(converted.as_mut_ptr() as *mut T, new_length, new_capacity);
+            forget(converted);
+            Ok(buffer)
+        }
+    }
 }
 
 /// Evaluates a single hand and returns score
@@ -47,9 +90,9 @@ struct Evaluator {
 impl Evaluator {
     pub fn load() -> Self {
         Self {
-            rank_table: read_vector_from_file::<u16>(RANK_TABLE_FILENAME).unwrap(),
-            flush_table: read_vector_from_file::<u16>(FLUSH_TABLE_FILENAME).unwrap(),
-            perf_hash_offsets: read_vector_from_file::<u32>(PERF_HASH_FILENAME).unwrap(),
+            rank_table: Asset::get(RANK_TABLE_FILENAME).read_vec::<u16>().unwrap(),
+            flush_table: Asset::get(FLUSH_TABLE_FILENAME).read_vec::<u16>().unwrap(),
+            perf_hash_offsets: Asset::get(PERF_HASH_FILENAME).read_vec::<u32>().unwrap(),
         }
     }
 
