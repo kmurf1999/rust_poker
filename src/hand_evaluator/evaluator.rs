@@ -1,70 +1,25 @@
 use super::hand;
 
-use read_write::unpack_vec_from_asset;
+use read_write::VecIO;
 
-use rust_embed::RustEmbed;
+// use rust_embed::RustEmbed;
+
 use std::num::Wrapping;
 use std::fs::File;
-use std::io::prelude::*;
-use std::slice;
-use std::mem::{transmute, size_of, forget};
-use std::io::{Write, Result, Error, ErrorKind};
+use std::env;
 
 /// Must point to same directory as `gen_eval_table`
-#[derive(RustEmbed)]
-#[folder = "$OUT_DIR/assets"]
-struct Asset;
+// #[derive(RustEmbed)]
+// #[folder = "eval_table"]
+// struct Asset;
 
 /// filename to write and read perf hash offset table
-const PERF_HASH_FILENAME: &str = "h_eval_offsets.dat";
-const RANK_TABLE_FILENAME: &str = "h_eval_rank_table.dat";
-const FLUSH_TABLE_FILENAME: &str = "h_eval_flush_table.dat";
+// const OUT_DIR: &str = "STATIC_ASSET_DIR";
+// const PERF_HASH_FILENAME: &str = "h_eval_offsets.dat";
+// const RANK_TABLE_FILENAME: &str = "h_eval_rank_table.dat";
+// const FLUSH_TABLE_FILENAME: &str = "h_eval_flush_table.dat";
 
 const PERF_HASH_ROW_SHIFT: usize = 12;
-
-trait Packer {
-    fn write_vec_to_file<T>(&mut self, data: &Vec<T>) -> Result<()>;
-    fn read_vec_from_file<T>(&mut self) -> Result<Vec<T>>;
-}
-
-impl Packer for File {
-    fn write_vec_to_file<T>(&mut self, data: &Vec<T>) -> Result<()> {
-        unsafe {
-            self.write_all(slice::from_raw_parts(transmute::<*const T, *const u8>(data.as_ptr()), data.len() * size_of::<T>()))?;
-        }
-        Ok(())
-    }
-    fn read_vec_from_file<T>(&mut self) -> Result<Vec<T>> {
-        let mut buffer: Vec<T> = Vec::new();
-        let length = buffer.len();
-        let capacity = buffer.capacity();
-        unsafe {
-            let mut converted = Vec::<u8>::from_raw_parts(buffer.as_mut_ptr() as *mut u8, length * size_of::<T>(), capacity * size_of::<T>());
-            match self.read_to_end(&mut converted) {
-                Ok(size) => {
-                    if converted.len() % size_of::<T>() != 0 {
-                        converted.truncate(length * size_of::<T>());
-                        forget(converted);
-                        return Err(Error::new(
-                            ErrorKind::UnexpectedEof,
-                            format!("read_file() returned a number of bytes ({}) which is not a multiple of size ({})", size, size_of::<T>())
-                        ));
-                    }
-                },
-                Err(e) => {
-                    converted.truncate(length * size_of::<T>());
-                    forget(converted);
-                    return Err(e);
-                }
-            }
-            let new_length = converted.len() / size_of::<T>();
-            let new_capacity = converted.len() / size_of::<T>();
-            buffer = Vec::from_raw_parts(converted.as_mut_ptr() as *mut T, new_length, new_capacity);
-            forget(converted);
-            Ok(buffer)
-        }
-    }
-}
 
 /// Evaluates a single hand and returns score
 pub fn evaluate(hand: &hand::Hand) -> u16 {
@@ -88,10 +43,19 @@ struct Evaluator {
 
 impl Evaluator {
     pub fn load() -> Self {
+        let perf_hash_file = concat!(env!("OUT_DIR"), "/h_eval_offsets.dat");
+        let flush_table_file = concat!(env!("OUT_DIR"), "/h_eval_flush_table.dat");
+        let rank_table_file = concat!(env!("OUT_DIR"), "/h_eval_rank_table.dat");
         Self {
-            rank_table: unpack_vec_from_asset::<u16>(Asset::get(RANK_TABLE_FILENAME)).unwrap(),
-            flush_table: unpack_vec_from_asset::<u16>(Asset::get(FLUSH_TABLE_FILENAME)).unwrap(),
-            perf_hash_offsets: unpack_vec_from_asset::<u32>(Asset::get(PERF_HASH_FILENAME)).unwrap()
+            rank_table: File::open(rank_table_file)
+                .unwrap()
+                .read_vec_from_file::<u16>().unwrap(),
+            flush_table: File::open(flush_table_file)
+                .unwrap()
+                .read_vec_from_file::<u16>().unwrap(),
+            perf_hash_offsets: File::open(perf_hash_file)
+                .unwrap()
+                .read_vec_from_file::<u32>().unwrap(),
         }
     }
 

@@ -35,7 +35,7 @@ extern crate rand;
 extern crate serde_json;
 extern crate serde;
 extern crate test;
-extern crate rust_embed;
+// extern crate rust_embed;
 
 #[cfg(all(feature = "indexer"))]
 extern crate hand_indexer;

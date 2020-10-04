@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Kyle Murphy <kwmurph2@asu.edu>"]
 edition = "2018"
 license = "MIT"
+description = "vector reading and writing tools for rust_poker"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

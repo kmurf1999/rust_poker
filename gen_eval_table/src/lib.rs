@@ -36,8 +36,6 @@ pub const RANKS: &[u64; 13] = &[
 /// Table of power of 2 flush ranks
 pub const FLUSH_RANKS: &[u64; 13] = &[1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 
-const OUT_DIR: &str = "OUT_DIR";
-const ASSET_FOLDER: &str = "assets";
 const PERF_HASH_FILENAME: &str = "h_eval_offsets.dat";
 const RANK_TABLE_FILENAME: &str = "h_eval_rank_table.dat";
 const FLUSH_TABLE_FILENAME: &str = "h_eval_flush_table.dat";
@@ -75,14 +73,15 @@ fn get_key(ranks: u64, flush: bool) -> usize {
 }
 
 /// return true if asset file at path exists
-fn hash_file_exists(filename: &str) -> bool {
-    let out_dir = env::var(OUT_DIR).expect("CARGO_TARGET_DIR env var for perfect hash file not set");
-    let fullpath = Path::new(&out_dir).join(ASSET_FOLDER).join(filename);
-    if File::open(fullpath).is_ok() {
-        return true;
-    }
-    false
-}
+// fn hash_file_exists(filename: &str) -> bool {
+//     let out_dir = env::var("OUT_DIR").expect("CARGO_TARGET_DIR env var for perfect hash file not set");
+//     // let fullpath = Path::new(&out_dir).join(ASSET_FOLDER).join(filename);
+//     let fullpath = Path::new(&out_dir).join(filename);
+//     if File::open(fullpath).is_ok() {
+//         return true;
+//     }
+//     false
+// }
 
 struct EvalTableGenerator {
     rank_table: Vec<u16>,
@@ -319,8 +318,10 @@ impl EvalTableGenerator {
     }
     fn write_files(&mut self) -> Result<()> {
         // create folder
-        let dir = Path::new(&env::var(OUT_DIR).unwrap()).join(ASSET_FOLDER);
-        std::fs::create_dir(dir.clone())?;
+        let out_dir = env::var("OUT_DIR").expect("OUT_DIR env var for perfect hash file not set");
+        let dir = Path::new(&out_dir);
+        // let dir = Path::new();
+        // std::fs::create_dir(dir.clone())?;
         // write offsets
         let hash_offsets_path = dir.join(PERF_HASH_FILENAME);
         let mut hash_offsets_file = File::create(hash_offsets_path)?;
@@ -339,24 +340,15 @@ impl EvalTableGenerator {
 }
 
 pub fn gen_eval_table() {
-    if hash_file_exists(PERF_HASH_FILENAME)
-        && hash_file_exists(RANK_TABLE_FILENAME)
-        && hash_file_exists(FLUSH_TABLE_FILENAME)
-    {
-        println!("exists");
+    let out_dir = env::var("OUT_DIR").expect("OUT_DIR env var for perfect hash file not set");
+    let fullpath = Path::new(&out_dir);
+
+    if fullpath.join(PERF_HASH_FILENAME).exists()
+    && fullpath.join(RANK_TABLE_FILENAME).exists()
+    && fullpath.join(FLUSH_TABLE_FILENAME).exists() {
         return;
     }
 
     let mut generator = EvalTableGenerator::new();
     generator.start();
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_generate_tables() {
-        gen_eval_table();
-    }
 }
