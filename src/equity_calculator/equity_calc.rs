@@ -310,10 +310,10 @@ mod tests {
     use test::Bencher;
 
     #[test]
-    fn test_issue() {
+    fn test_weighted_ranges() {
         const ERROR: f64 = 0.01;
         const THREADS: u8 = 4;
-        const SIM_COUNT: u64 = 10000;
+        const SIM_COUNT: u64 = 30000;
         let ranges =
             HandRange::from_strings(["KK".to_string(), "AA@1,QQ".to_string()].to_vec());
         let eq = calc_equity(&ranges, 0, THREADS, SIM_COUNT);
