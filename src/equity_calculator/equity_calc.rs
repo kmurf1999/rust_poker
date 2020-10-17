@@ -248,11 +248,13 @@ impl Simulator {
         let mut winner_mask: u8 = 0;
         let mut best_score: u16 = 0;
         let mut player_mask: u8 = 1;
+        let mut combo_weight: f64 = 1.0;
         for i in 0..self.n_players {
             // one-hot-encoded player
             let combo = &self.hand_ranges[i].hands[player_hand_indexes[i]];
             let hand: Hand = *board + CARDS[usize::from(combo.0)] + CARDS[usize::from(combo.1)];
             let score = evaluate(&hand);
+            combo_weight *= combo.2 as f64;
             if score > best_score {
                 // add to wins by hand mask
                 best_score = score;
@@ -266,12 +268,11 @@ impl Simulator {
         for i in 0..self.n_players {
             if ((1u8 << i) & winner_mask) != 0 {
                 if n_winners == 1 {
-                    results.wins[i] +=
-                        self.hand_ranges[i].hands[player_hand_indexes[i]].2 as f64 / 100.0;
+                    results.wins[i] += combo_weight;
+                        // self.hand_ranges[i].hands[player_hand_indexes[i]].2 as f64 / self.hand_ranges[i].total_weight as f64;
                 } else {
-                    results.ties[i] += (self.hand_ranges[i].hands[player_hand_indexes[i]].2 as f64
-                        / 100.0)
-                        / n_winners as f64;
+                    results.ties[i] += combo_weight / n_winners as f64;
+                        // (self.hand_ranges[i].hands[player_hand_indexes[i]].2 as f64 / self.hand_ranges[i].total_weight as f64) / n_winners as f64;
                 }
             }
         }
@@ -309,13 +310,14 @@ mod tests {
     use test::Bencher;
 
     #[test]
-    fn test_weighted_ranges() {
+    fn test_issue() {
         const ERROR: f64 = 0.01;
         const THREADS: u8 = 4;
-        const SIM_COUNT: u64 = 30000;
+        const SIM_COUNT: u64 = 10000;
         let ranges =
-            HandRange::from_strings(["AA@50,22@100".to_string(), "QQ".to_string()].to_vec());
+            HandRange::from_strings(["KK".to_string(), "AA@1,QQ".to_string()].to_vec());
         let eq = calc_equity(&ranges, 0, THREADS, SIM_COUNT);
+        println!("{}  {}", eq[0], eq[1]);
         assert!(eq[0] > 0.367 - ERROR);
         assert!(eq[0] < 0.367 + ERROR);
     }

@@ -208,7 +208,7 @@ dependencies = [
 
 [[package]]
 name = "gen_eval_table"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "read_write",
 ]
@@ -419,7 +419,7 @@ dependencies = [
 
 [[package]]
 name = "read_write"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "regex"

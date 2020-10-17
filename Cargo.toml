@@ -24,10 +24,10 @@ members = [
 indexer = ["hand_indexer"]
 
 [build-dependencies]
-gen_eval_table = { path = "gen_eval_table", version = "0.1.0" }
+gen_eval_table = { path = "gen_eval_table", version = "0.1.1" }
 
 [dependencies]
-read_write = { path = "read_write", version = "0.1.0" }
+read_write = { path = "read_write", version = "0.1.1" }
 # rust-embed = { version = "5.6.0", features = ["interpolate-folder-path"] }
 hand_indexer = { path = "hand_indexer", version = "0.1.0", optional = true }
 lazy_static =  "1.4.0"

@@ -79,7 +79,7 @@ impl Eq for Combo {}
 pub struct HandRange {
     /// A vector of possible hole card combinations
     pub hands: Vec<Combo>,
-    pub char_vec: Vec<char>,
+    pub char_vec: Vec<char>
 }
 
 impl HandRange {
@@ -87,7 +87,7 @@ impl HandRange {
     fn new() -> Self {
         HandRange {
             hands: Vec::new(),
-            char_vec: Vec::new(),
+            char_vec: Vec::new()
         }
     }
 

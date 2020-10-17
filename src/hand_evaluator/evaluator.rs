@@ -87,10 +87,28 @@ mod tests {
     }
 
     #[test]
-    fn test_2222() {
+    fn test_four_of_a_kind() {
         let hand =
             hand::Hand::empty() + hand::CARDS[0] + hand::CARDS[1] + hand::CARDS[2] + hand::CARDS[3];
         assert_eq!(8, evaluate(&hand) >> HAND_CATEGORY_SHIFT);
         assert_eq!(32769, evaluate(&hand));
+    }
+
+    #[test]
+    fn test_trips() {
+        let hand = hand::Hand::empty() + hand::CARDS[0] + hand::CARDS[1] + hand::CARDS[2];
+        assert_eq!(4, evaluate(&hand) >> HAND_CATEGORY_SHIFT);
+    }
+
+    #[test]
+    fn test_pair() {
+        let hand = hand::Hand::empty() + hand::CARDS[0] + hand::CARDS[1];
+        assert_eq!(2, evaluate(&hand) >> HAND_CATEGORY_SHIFT);
+    }
+
+    #[test]
+    fn test_highcard() {
+        let hand = hand::Hand::empty() + hand::CARDS[0] + hand::CARDS[5];
+        assert_eq!(1, evaluate(&hand) >> HAND_CATEGORY_SHIFT);
     }
 }
