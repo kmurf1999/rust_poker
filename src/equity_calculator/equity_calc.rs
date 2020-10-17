@@ -317,9 +317,8 @@ mod tests {
         let ranges =
             HandRange::from_strings(["KK".to_string(), "AA@1,QQ".to_string()].to_vec());
         let eq = calc_equity(&ranges, 0, THREADS, SIM_COUNT);
-        println!("{}  {}", eq[0], eq[1]);
-        assert!(eq[0] > 0.367 - ERROR);
-        assert!(eq[0] < 0.367 + ERROR);
+        assert!(eq[0] > 0.8206 - ERROR);
+        assert!(eq[0] < 0.8206 + ERROR);
     }
 
     #[bench]
