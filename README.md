@@ -51,6 +51,12 @@ let equities = calc_equity(&ranges, public_cards, n_threads, n_games);
 println!("player 1 equity: {}", equities[0]);
 ```
 
-# Credit
+## Credit
 
 The hand evaluator and equity calculator library is a rust rewrite of **zekyll's** C++ equity calculator, [OMPEval](https://github.com/zekyll/OMPEval)
+
+## License
+
+This project is MIT Licensed
+
+Copyright (c) 2020 Kyle Murphy
