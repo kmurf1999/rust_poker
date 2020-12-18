@@ -16,7 +16,7 @@ A poker library written in rust.
 Add this to your `Cargo.toml`:
 ```
 [dependencies]
-rust_poker = "0.1.9"
+rust_poker = "0.1.10"
 ```
 **Note**: The first build of an application using `rust_poker` will take extra time to generate the hand evaluation table
 
