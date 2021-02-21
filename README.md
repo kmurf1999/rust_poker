@@ -16,7 +16,7 @@ A poker library written in rust.
 Add this to your `Cargo.toml`:
 ```
 [dependencies]
-rust_poker = "0.1.9"
+rust_poker = "0.1.10"
 ```
 **Note**: The first build of an application using `rust_poker` will take extra time to generate the hand evaluation table
 
@@ -51,6 +51,12 @@ let equities = calc_equity(&ranges, public_cards, n_threads, n_games);
 println!("player 1 equity: {}", equities[0]);
 ```
 
-# Credit
+## Credit
 
 The hand evaluator and equity calculator library is a rust rewrite of **zekyll's** C++ equity calculator, [OMPEval](https://github.com/zekyll/OMPEval)
+
+## License
+
+This project is MIT Licensed
+
+Copyright (c) 2020 Kyle Murphy
