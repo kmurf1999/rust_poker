@@ -21,7 +21,7 @@ fn main() {
     // the resulting bindings.
     let bindings = bindgen::Builder::default()
         .header("c_hand_indexer/wrapper.h")
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        // .parse_callbacks(Box::new(bindgen::CargoCallbacks))
         // Finish the builder and generate the bindings.
         .generate()
         // Unwrap the Result and panic on failure.

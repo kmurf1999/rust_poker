@@ -128,7 +128,7 @@ pub fn get_made_hand_category(hole_cards: &Combo, board: u64) -> MadeHandCategor
 
 pub fn get_draw_hand_category(hole_cards: &Combo, board: u64) -> DrawHandCategories {
     let eval_hand = Hand::from_bit_mask(board);
-    let eval_board = Hand::empty() + Hand::from_hole_cards(hole_cards.0, hole_cards.1);
+    let eval_board = Hand::default() + Hand::from_hole_cards(hole_cards.0, hole_cards.1);
     let hand = Hand::from_bit_mask(board) + Hand::from_hole_cards(hole_cards.0, hole_cards.1);
     // detect two card flush draw
     for i in 0..4 {

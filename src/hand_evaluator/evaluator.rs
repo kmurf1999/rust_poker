@@ -4,9 +4,9 @@ use read_write::VecIO;
 
 // use rust_embed::RustEmbed;
 
-use std::num::Wrapping;
-use std::fs::File;
 use std::env;
+use std::fs::File;
+use std::num::Wrapping;
 
 /// Must point to same directory as `gen_eval_table`
 // #[derive(RustEmbed)]
@@ -49,13 +49,16 @@ impl Evaluator {
         Self {
             rank_table: File::open(rank_table_file)
                 .unwrap()
-                .read_vec_from_file::<u16>().unwrap(),
+                .read_vec_from_file::<u16>()
+                .unwrap(),
             flush_table: File::open(flush_table_file)
                 .unwrap()
-                .read_vec_from_file::<u16>().unwrap(),
+                .read_vec_from_file::<u16>()
+                .unwrap(),
             perf_hash_offsets: File::open(perf_hash_file)
                 .unwrap()
-                .read_vec_from_file::<u32>().unwrap(),
+                .read_vec_from_file::<u32>()
+                .unwrap(),
         }
     }
 
@@ -82,33 +85,36 @@ mod tests {
 
     #[bench]
     fn bench_lookup(b: &mut Bencher) {
-        let hand = hand::Hand::empty() + hand::CARDS[0] + hand::CARDS[1];
+        let hand = hand::Hand::default() + hand::CARDS[0] + hand::CARDS[1];
         b.iter(|| evaluate(&hand));
     }
 
     #[test]
     fn test_four_of_a_kind() {
-        let hand =
-            hand::Hand::empty() + hand::CARDS[0] + hand::CARDS[1] + hand::CARDS[2] + hand::CARDS[3];
+        let hand = hand::Hand::default()
+            + hand::CARDS[0]
+            + hand::CARDS[1]
+            + hand::CARDS[2]
+            + hand::CARDS[3];
         assert_eq!(8, evaluate(&hand) >> HAND_CATEGORY_SHIFT);
         assert_eq!(32769, evaluate(&hand));
     }
 
     #[test]
     fn test_trips() {
-        let hand = hand::Hand::empty() + hand::CARDS[0] + hand::CARDS[1] + hand::CARDS[2];
+        let hand = hand::Hand::default() + hand::CARDS[0] + hand::CARDS[1] + hand::CARDS[2];
         assert_eq!(4, evaluate(&hand) >> HAND_CATEGORY_SHIFT);
     }
 
     #[test]
     fn test_pair() {
-        let hand = hand::Hand::empty() + hand::CARDS[0] + hand::CARDS[1];
+        let hand = hand::Hand::default() + hand::CARDS[0] + hand::CARDS[1];
         assert_eq!(2, evaluate(&hand) >> HAND_CATEGORY_SHIFT);
     }
 
     #[test]
     fn test_highcard() {
-        let hand = hand::Hand::empty() + hand::CARDS[0] + hand::CARDS[5];
+        let hand = hand::Hand::default() + hand::CARDS[0] + hand::CARDS[5];
         assert_eq!(1, evaluate(&hand) >> HAND_CATEGORY_SHIFT);
     }
 }

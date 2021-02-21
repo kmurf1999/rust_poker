@@ -33,7 +33,7 @@ impl Hand {
 
     /// construct a Hand object from board mask
     pub fn from_bit_mask(mask: u64) -> Hand {
-        let mut board = Hand::empty();
+        let mut board = Hand::default();
         for c in 0..usize::from(CARD_COUNT) {
             if (mask & (1u64 << c)) != 0 {
                 board += CARDS[c];
@@ -85,7 +85,16 @@ impl Hand {
     pub fn count(self) -> u32 {
         (self.get_counters() >> (CARD_COUNT_SHIFT - 32)) & 0xf
     }
-    // contruct the empty hand
+
+    /// Get the number of cards for a suit
+    pub fn suit_count(self, suit: u8) -> i32 {
+        let shift = 4 * suit + (SUITS_SHIFT - 32);
+        (((self.get_counters() >> shift) & 0xf) as i32) - 3
+    }
+}
+
+impl Default for Hand {
+    // contruct the default hand
     // needed for evaluation
     // initializes suit counters
     //
@@ -94,20 +103,14 @@ impl Hand {
     // ```
     // use rust_poker::hand_evaluator::{Hand, CARDS, evaluate};
     //
-    // let hand = Hand::empty() + CARDS[0] + CARDS[1];
+    // let hand = Hand::default() + CARDS[0] + CARDS[1];
     // let score = evaluate(&hand);
     // ```
-    pub fn empty() -> Hand {
+    fn default() -> Self {
         Hand {
             key: 0x3333u64 << SUITS_SHIFT,
             mask: 0,
         }
-    }
-
-    /// Get the number of cards for a suit
-    pub fn suit_count(self, suit: u8) -> i32 {
-        let shift = 4 * suit + (SUITS_SHIFT - 32);
-        (((self.get_counters() >> shift) & 0xf) as i32) - 3
     }
 }
 
@@ -138,7 +141,7 @@ impl PartialEq for Hand {
 impl Eq for Hand {}
 
 fn init_card_constants() -> [Hand; 52] {
-    let mut hands: [Hand; 52] = [Hand::empty(); 52];
+    let mut hands: [Hand; 52] = [Hand::default(); 52];
 
     for c in 0..CARD_COUNT {
         let rank = c / 4;
@@ -194,26 +197,26 @@ mod tests {
 
     #[test]
     fn test_flush_key() {
-        let h_flush = Hand::empty() + CARDS[0] + CARDS[4] + CARDS[8] + CARDS[12] + CARDS[16];
+        let h_flush = Hand::default() + CARDS[0] + CARDS[4] + CARDS[8] + CARDS[12] + CARDS[16];
         assert_eq!(h_flush.get_flush_key(), 0b11111);
 
-        let h_noflush = Hand::empty() + CARDS[0] + CARDS[4] + CARDS[8] + CARDS[12];
+        let h_noflush = Hand::default() + CARDS[0] + CARDS[4] + CARDS[8] + CARDS[12];
         assert_eq!(h_noflush.get_flush_key(), 0);
     }
 
     #[test]
     fn test_has_flush() {
-        let h_flush = Hand::empty() + CARDS[0] + CARDS[8] + CARDS[12] + CARDS[16] + CARDS[20];
+        let h_flush = Hand::default() + CARDS[0] + CARDS[8] + CARDS[12] + CARDS[16] + CARDS[20];
         assert_eq!(h_flush.has_flush(), true);
-        let h_noflush = Hand::empty() + CARDS[0] + CARDS[8] + CARDS[12] + CARDS[16] + CARDS[21];
+        let h_noflush = Hand::default() + CARDS[0] + CARDS[8] + CARDS[12] + CARDS[16] + CARDS[21];
         assert_eq!(h_noflush.has_flush(), false);
     }
 
     #[test]
     fn test_suit_count() {
-        let h_4_spades = Hand::empty() + CARDS[0] + CARDS[8] + CARDS[12] + CARDS[16] + CARDS[21];
+        let h_4_spades = Hand::default() + CARDS[0] + CARDS[8] + CARDS[12] + CARDS[16] + CARDS[21];
         assert_eq!(h_4_spades.suit_count(0), 4);
-        let h_3_hearts = Hand::empty() + CARDS[1] + CARDS[9] + CARDS[13];
+        let h_3_hearts = Hand::default() + CARDS[1] + CARDS[9] + CARDS[13];
         assert_eq!(h_3_hearts.suit_count(1), 3);
     }
 }

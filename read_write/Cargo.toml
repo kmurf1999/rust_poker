@@ -1,6 +1,6 @@
 [package]
 name = "read_write"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Kyle Murphy <kwmurph2@asu.edu>"]
 edition = "2018"
 license = "MIT"

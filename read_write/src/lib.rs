@@ -8,13 +8,13 @@ use std::io::{Write, Result, Error, ErrorKind};
 /// object used to extend functionality of File
 /// used for reading and writing byte vectors to files
 pub trait VecIO {
-    fn write_vec_to_file<T>(&mut self, data: &Vec<T>) -> Result<()>;
+    fn write_slice_to_file<T>(&mut self, data: &[T]) -> Result<()>;
     fn read_vec_from_file<T>(&mut self) -> Result<Vec<T>>;
 }
 
 impl VecIO for File {
     /// Writes a vector of type T to file as bytes
-    fn write_vec_to_file<T>(&mut self, data: &Vec<T>) -> Result<()> {
+    fn write_slice_to_file<T>(&mut self, data: &[T]) -> Result<()> {
         unsafe {
             self.write_all(slice::from_raw_parts(transmute::<*const T, *const u8>(data.as_ptr()), data.len() * size_of::<T>()))?;
         }

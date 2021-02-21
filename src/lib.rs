@@ -14,9 +14,9 @@
 /// use rust_poker::equity_calculator::calc_equity;
 /// let ranges = HandRange::from_strings(["AK,22+".to_string(), "AA,KK,QQ@50".to_string()].to_vec());
 /// let public_cards = get_card_mask("2h3d4c");
-/// let n_games = 10000;
+/// let std_dev_target = 0.01;
 /// let n_threads = 4;
-/// let equities = calc_equity(&ranges, public_cards, n_threads, n_games);
+/// let equities = approx_equity(&ranges, public_cards, n_threads, 0.001);
 /// ```
 ///
 /// ## Hand Evaluator
@@ -24,7 +24,7 @@
 /// ```
 /// use rust_poker::hand_evaluator::{Hand, CARDS, evaluate};
 /// // cards are indexed 0->51 where index is 4 * rank + suit
-/// let hand = Hand::empty() + CARDS[0] + CARDS[1];
+/// let hand = Hand::default() + CARDS[0] + CARDS[1];
 /// let score = evaluate(&hand);
 /// ```
 
@@ -32,8 +32,8 @@
 extern crate lazy_static;
 extern crate crossbeam;
 extern crate rand;
-extern crate serde_json;
 extern crate serde;
+extern crate serde_json;
 extern crate test;
 // extern crate rust_embed;
 

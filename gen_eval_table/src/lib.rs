@@ -325,15 +325,15 @@ impl EvalTableGenerator {
         // write offsets
         let hash_offsets_path = dir.join(PERF_HASH_FILENAME);
         let mut hash_offsets_file = File::create(hash_offsets_path)?;
-        hash_offsets_file.write_vec_to_file::<u32>(&self.perf_hash_offsets)?;
+        hash_offsets_file.write_slice_to_file::<u32>(&self.perf_hash_offsets.as_slice())?;
         // write rank table
         let rank_table_path = dir.join(RANK_TABLE_FILENAME);
         let mut rank_table_file = File::create(rank_table_path)?;
-        rank_table_file.write_vec_to_file::<u16>(&self.rank_table)?;
+        rank_table_file.write_slice_to_file::<u16>(&self.rank_table.as_slice())?;
         // write flush table
         let flush_table_path = dir.join(FLUSH_TABLE_FILENAME);
         let mut flush_table_file = File::create(flush_table_path)?;
-        flush_table_file.write_vec_to_file::<u16>(&self.flush_table)?;
+        flush_table_file.write_slice_to_file::<u16>(&self.flush_table.as_slice())?;
 
         Ok(())
     }
