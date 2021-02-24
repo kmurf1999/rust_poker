@@ -1,6 +1,6 @@
 [package]
 name = "rust_poker"
-version = "0.1.12"
+version = "0.1.13"
 authors = ["kmurf1999 <kwmurph2@asu.edu>"]
 repository = "https://github.com/kmurf1999/rust_poker"
 description = "Rust poker library"

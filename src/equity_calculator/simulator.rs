@@ -916,14 +916,24 @@ mod tests {
     use test::Bencher;
 
     #[test]
-    fn test_weighted_ranges() {
+    fn test_approx_weighted() {
         const ERROR: f64 = 0.01;
         const THREADS: u8 = 4;
         let ranges = HandRange::from_strings(["KK".to_string(), "AA@1,QQ".to_string()].to_vec());
         let equity = approx_equity(&ranges, 0, THREADS, 0.001).unwrap();
         println!("{:?}", equity);
-        assert!(equity[0] > 0.811 - ERROR);
-        assert!(equity[0] < 0.811 + ERROR);
+        assert!(equity[0] > 0.8130232455484216 - ERROR);
+        assert!(equity[0] < 0.8130232455484216 + ERROR);
+    }
+
+    #[test]
+    fn test_exact_weighted() {
+        const THREADS: u8 = 8;
+        let ranges = HandRange::from_strings(["KK".to_string(), "AA@1,QQ".to_string()].to_vec());
+        let board_mask = get_card_mask("");
+        let equity = exact_equity(&ranges, board_mask, THREADS).unwrap();
+        println!("{:?}", equity);
+        assert_eq!(equity[0], 0.8130232455484216);
     }
 
     #[test]
