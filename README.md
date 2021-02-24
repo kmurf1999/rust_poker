@@ -16,7 +16,7 @@ A poker library written in rust.
 Add this to your `Cargo.toml`:
 ```
 [dependencies]
-rust_poker = "0.1.10"
+rust_poker = "0.1.12"
 ```
 **Note**: The first build of an application using `rust_poker` will take extra time to generate the hand evaluation table
 
@@ -37,17 +37,18 @@ println!("score: {}", score);
 ## Equity Calculator
 
 Calculates the range vs range equities for up to 6 different ranges specified by equilab-like range strings.
+Supports monte-carlo simulations and exact equity calculations
 
 ### Usage
 
 ```rust
 use rust_poker::hand_range::{HandRange, get_card_mask};
-use rust_poker::equity_calculator::calc_equity;
+use rust_poker::equity_calculator::approx_equity;
 let ranges = HandRange::from_strings(["AK,22+".to_string(), "random".to_string()].to_vec());
 let public_cards = get_card_mask("2h3d4c".to_string());
-let n_games = 10000;
+let stdev_target = 0.01;
 let n_threads = 4;
-let equities = calc_equity(&ranges, public_cards, n_threads, n_games);
+let equities = approx_equity(&ranges, public_cards, n_threads, stdev_target);
 println!("player 1 equity: {}", equities[0]);
 ```
 
