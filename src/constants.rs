@@ -4,6 +4,7 @@ pub const CARD_COUNT: u8 = 52;
 /// Number of ranks in a sandard deck
 /// (2 -> A)
 pub const RANK_COUNT: u8 = 13;
+pub const SUIT_COUNT: u8 = 4;
 
 /// char to u8 rank table
 pub const RANK_TO_CHAR: &[char; 13] = &[
@@ -12,6 +13,9 @@ pub const RANK_TO_CHAR: &[char; 13] = &[
 
 /// char to u8 suit table
 pub static SUIT_TO_CHAR: &[char; 4] = &['s', 'h', 'd', 'c'];
+
+pub static SUIT_MASK: u8 = 0x3;
+pub static RANK_MASK: u8 = 0x3c;
 
 /// Tables of unique primes for hashing hands
 pub const RANKS: &[u64; 13] = &[

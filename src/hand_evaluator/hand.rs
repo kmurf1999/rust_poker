@@ -16,8 +16,8 @@ const FLUSH_CHECK_MASK32: u32 = 0x8888u32 << (SUITS_SHIFT - 32) as u32;
 /// Bits 64-128: Bit mask for all cards (suits in 16 bit groups)
 #[derive(Debug, Copy, Clone)]
 pub struct Hand {
-    key: u64,
-    mask: u64,
+    pub key: u64,
+    pub mask: u64,
 }
 
 lazy_static! {
@@ -78,16 +78,16 @@ impl Hand {
             0
         }
     }
-    pub fn has_flush(self) -> bool {
+    pub const fn has_flush(self) -> bool {
         (self.get_key() & FLUSH_CHECK_MASK64) != 0
     }
     // Return number of cards in hand
-    pub fn count(self) -> u32 {
+    pub const fn count(self) -> u32 {
         (self.get_counters() >> (CARD_COUNT_SHIFT - 32)) & 0xf
     }
 
     /// Get the number of cards for a suit
-    pub fn suit_count(self, suit: u8) -> i32 {
+    pub const fn suit_count(self, suit: u8) -> i32 {
         let shift = 4 * suit + (SUITS_SHIFT - 32);
         (((self.get_counters() >> shift) & 0xf) as i32) - 3
     }

@@ -5,18 +5,19 @@
 ///
 /// Currently supports
 ///  - monte carlo range vs. range equity calculations
+///  - full enumeration for exact equities
 ///  - fast hand evaluation
 ///
 /// ## Equity Calculator
 ///
 /// ```
 /// use rust_poker::hand_range::{HandRange, get_card_mask};
-/// use rust_poker::equity_calculator::calc_equity;
+/// use rust_poker::equity_calculator::approx_equity;
 /// let ranges = HandRange::from_strings(["AK,22+".to_string(), "AA,KK,QQ@50".to_string()].to_vec());
 /// let public_cards = get_card_mask("2h3d4c");
 /// let std_dev_target = 0.01;
 /// let n_threads = 4;
-/// let equities = approx_equity(&ranges, public_cards, n_threads, 0.001);
+/// let equities = approx_equity(&ranges, public_cards, n_threads, std_dev_target);
 /// ```
 ///
 /// ## Hand Evaluator

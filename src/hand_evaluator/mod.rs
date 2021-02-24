@@ -1,5 +1,5 @@
-mod hand;
 mod evaluator;
+mod hand;
 
-pub use evaluator::evaluate;
+pub use evaluator::*;
 pub use hand::{Hand, CARDS};

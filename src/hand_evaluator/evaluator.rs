@@ -22,8 +22,15 @@ use std::num::Wrapping;
 const PERF_HASH_ROW_SHIFT: usize = 12;
 
 /// Evaluates a single hand and returns score
+#[inline(always)]
 pub fn evaluate(hand: &hand::Hand) -> u16 {
     LOOKUP_TABLE.evaluate(hand)
+}
+
+/// Evaluates a single hand and returns score
+#[inline(always)]
+pub fn evaluate_without_flush(hand: &hand::Hand) -> u16 {
+    LOOKUP_TABLE.evaluate_without_flush(hand)
 }
 
 lazy_static! {
@@ -62,6 +69,12 @@ impl Evaluator {
         }
     }
 
+    #[inline(always)]
+    pub fn evaluate_without_flush(&self, hand: &hand::Hand) -> u16 {
+        self.rank_table[self.perf_hash(hand.get_rank_key())]
+    }
+
+    #[inline(always)]
     pub fn evaluate(&self, hand: &hand::Hand) -> u16 {
         if hand.has_flush() {
             self.flush_table[hand.get_flush_key()]
@@ -70,6 +83,7 @@ impl Evaluator {
         }
     }
 
+    #[inline(always)]
     fn perf_hash(&self, key: usize) -> usize {
         // works because of overflow
         (Wrapping(key as u32) + Wrapping(self.perf_hash_offsets[key >> PERF_HASH_ROW_SHIFT])).0

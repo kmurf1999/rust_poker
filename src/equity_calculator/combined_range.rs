@@ -9,13 +9,14 @@ const MAX_PLAYERS: usize = 6;
 /// Max combined range size
 const MAX_SIZE: usize = 10000;
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 /// One valid combination of hole card hands
 pub struct Combo {
     /// Mask of all cards in combo used for rejection sampling
     pub mask: u64,
     /// Option vector of hands
     pub hands: [Hand; MAX_PLAYERS],
+    /// tuple of (card_idx, card_idx, hand_weight)
     pub hole_cards: [(u8, u8, u8); MAX_PLAYERS],
 }
 
@@ -30,6 +31,7 @@ impl Combo {
 }
 
 /// Structure to combine ranges in order to speed up rejection sampling
+#[derive(Debug)]
 pub struct CombinedRange {
     player_count: usize,
     players: [usize; MAX_PLAYERS],
