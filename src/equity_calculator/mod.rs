@@ -1,5 +1,5 @@
 mod combined_range;
-mod equity_calculator;
+mod simulator;
 
 pub use combined_range::CombinedRange;
-pub use equity_calculator::{approx_equity, exact_equity};
+pub use simulator::{approx_equity, exact_equity};
