@@ -8,5 +8,4 @@ description = "A rust interface around the poker hand indexer library by Kevin W
 
 [build-dependencies]
 bindgen = "0.49.4"
-bindgen = "0.31.3"
 cmake = "0.1"
