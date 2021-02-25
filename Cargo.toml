@@ -30,7 +30,7 @@ gen_eval_table = { path = "gen_eval_table", version = "0.1.2" }
 read_write = { path = "read_write", version = "0.1.2" }
 fastdivide = "0.2.0"
 # rust-embed = { version = "5.6.0", features = ["interpolate-folder-path"] }
-hand_indexer = { path = "hand_indexer", version = "0.1.1", optional = true }
+hand_indexer = { path = "hand_indexer", version = "0.1.2", optional = true }
 lazy_static =  "1.4.0"
 rand = { version = "0.7", features = ["small_rng"] }
 crossbeam = "0.7.3"
