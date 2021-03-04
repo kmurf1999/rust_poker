@@ -3,6 +3,7 @@ use crossbeam::atomic::AtomicCell;
 use fastdivide::DividerU64;
 use std::cmp::Ordering;
 use std::collections::HashMap;
+use thiserror::Error;
 
 use std::error::Error;
 use std::result::Result;
@@ -22,6 +23,18 @@ use crate::hand_range::HandRange;
 const MIN_PLAYERS: usize = 2;
 const MAX_PLAYERS: usize = 6;
 const BOARD_CARDS: u32 = 5;
+
+#[derive(Debug, Error)]
+pub enum SimulatorError {
+    #[error("too many players")]
+    TooManyPlayers,
+    #[error("too few players")]
+    TooFewPlayers,
+    #[error("Too many board cards")]
+    TooManyBoardCards,
+    #[error("conflicting ranges")]
+    ConflictingRanges,
+}
 
 /// Calculates exact range vs range equities
 ///
@@ -45,9 +58,16 @@ pub fn exact_equity(
     hand_ranges: &[HandRange],
     board_mask: u64,
     n_threads: u8,
-) -> Result<Vec<f64>, Box<dyn Error>> {
-    assert!(hand_ranges.len() >= MIN_PLAYERS && hand_ranges.len() <= MAX_PLAYERS);
-    assert!(board_mask.count_ones() <= BOARD_CARDS);
+) -> Result<Vec<f64>, SimulatorError> {
+    if hand_ranges.len() < MIN_PLAYERS {
+        return Err(SimulatorError::TooFewPlayers);
+    }
+    if hand_ranges.len() > MAX_PLAYERS {
+        return Err(SimulatorError::TooManyPlayers);
+    }
+    if board_mask.count_ones() > BOARD_CARDS {
+        return Err(SimulatorError::TooManyBoardCards);
+    }
 
     let mut hand_ranges = hand_ranges.to_owned();
     hand_ranges
@@ -55,7 +75,9 @@ pub fn exact_equity(
         .for_each(|h| h.remove_conflicting_combos(board_mask));
     let combined_ranges = CombinedRange::from_ranges(&hand_ranges);
     for cr in &combined_ranges {
-        assert!(cr.size() > 0);
+        if cr.size() == 0 {
+            return Err(SimulatorError::ConflictingRanges);
+        }
     }
     let sim = Arc::new(Simulator::new(
         hand_ranges,
@@ -103,9 +125,16 @@ pub fn approx_equity(
     board_mask: u64,
     n_threads: u8,
     stdev_target: f64,
-) -> Result<Vec<f64>, Box<dyn Error>> {
-    assert!(hand_ranges.len() >= MIN_PLAYERS && hand_ranges.len() <= MAX_PLAYERS);
-    assert!(board_mask.count_ones() <= BOARD_CARDS);
+) -> Result<Vec<f64>, SimulatorError> {
+    if hand_ranges.len() < MIN_PLAYERS {
+        return Err(SimulatorError::TooFewPlayers);
+    }
+    if hand_ranges.len() > MAX_PLAYERS {
+        return Err(SimulatorError::TooManyPlayers);
+    }
+    if board_mask.count_ones() > BOARD_CARDS {
+        return Err(SimulatorError::TooManyBoardCards);
+    }
 
     let mut rng = thread_rng();
     let mut hand_ranges = hand_ranges.to_owned();
@@ -114,7 +143,9 @@ pub fn approx_equity(
         .for_each(|h| h.remove_conflicting_combos(board_mask));
     let mut combined_ranges = CombinedRange::from_ranges(&hand_ranges);
     for cr in &mut combined_ranges {
-        assert!(cr.size() > 0);
+        if cr.size() == 0 {
+            return Err(SimulatorError::ConflictingRanges);
+        }
         cr.shuffle(&mut rng);
     }
     let sim = Arc::new(Simulator::new(
